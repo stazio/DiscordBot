@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import lombok.Getter;
 import lombok.val;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
@@ -13,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class QueuedAudioConnection extends AudioConnection {
 
+    @Getter
     private LinkedBlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
     private LoadErrorHandler activeErrorHandler;
 
