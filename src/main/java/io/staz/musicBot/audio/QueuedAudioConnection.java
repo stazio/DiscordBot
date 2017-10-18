@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import lombok.val;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
 import java.util.concurrent.LinkedBlockingQueue;
@@ -45,8 +46,14 @@ public class QueuedAudioConnection extends AudioConnection {
     }
 
     public void queueTrack(AudioTrack track) {
+       this.queueTrack(track, true);
+    }
+
+    public void queueTrack(AudioTrack track, boolean play) {
         System.out.println("Adding song: " + track.getIdentifier());
         this.queue.add(track);
+        if (play)
+            this.play();
     }
 
     @Override
@@ -58,7 +65,6 @@ public class QueuedAudioConnection extends AudioConnection {
 
     public boolean playNextSong() {
         AudioTrack queued = queue.poll();
-        System.out.println(queued.getIdentifier());
         if (queued != null)
             playTrack(queued);
         else
@@ -71,5 +77,30 @@ public class QueuedAudioConnection extends AudioConnection {
         super.play();
         if (player.getPlayingTrack() == null)
             playNextSong();
+    }
+
+    public void play(String message, LoadErrorHandler errorHandler) {
+        val instance = this;
+        loadSong(message, new AudioLoadResultHandler() {
+            @Override
+            public void trackLoaded(AudioTrack track) {
+                playTrack(track);
+            }
+
+            @Override
+            public void playlistLoaded(AudioPlaylist playlist) {
+                playlist.getTracks().forEach(instance::queueTrack);
+            }
+
+            @Override
+            public void noMatches() {
+                errorHandler.noMatches(message);
+            }
+
+            @Override
+            public void loadFailed(FriendlyException exception) {
+                errorHandler.loadFailed(exception, message);
+            }
+        });
     }
 }
