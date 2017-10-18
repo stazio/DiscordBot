@@ -3,3 +3,7 @@
 ./build
 ./out
 ./run
+
+./gradle
+./gradlew.bat
+./gradlew
