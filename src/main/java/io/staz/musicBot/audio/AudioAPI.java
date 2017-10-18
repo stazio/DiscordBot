@@ -30,4 +30,8 @@ public class AudioAPI {
         connections.add(conn);
         return conn;
     }
+
+    public void stop() {
+        connections.forEach(AudioConnection::stop);
+    }
 }
