@@ -48,7 +48,7 @@ public class QueuedAudioConnection extends AudioConnection {
     }
 
     public void queueTrack(AudioTrack track) {
-       this.queueTrack(track, true);
+        this.queueTrack(track, true);
     }
 
     public void queueTrack(AudioTrack track, boolean play) {

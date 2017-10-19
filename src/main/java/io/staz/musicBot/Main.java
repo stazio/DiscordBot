@@ -21,11 +21,9 @@ public class Main {
     public static final boolean DEBUG = true;
 
     public static final Logger logger = LogManager.getLogger("Main");
-
+    private static final Map<UUID, Instance> instances = new HashMap<>();
     private static Configuration<FlatConfig> config;
     private static FlatConfig flat;
-
-    private static final Map<UUID, Instance> instances = new HashMap<>();
 
     public static void main(String[] args) throws LoginException, RateLimitedException, InstantiationException, InterruptedException, IllegalAccessException, NoSuchFieldException, IOException {
         logger.info("Initialing....");
@@ -33,7 +31,7 @@ public class Main {
         logger.info("Version: indev"); // TODO
 
         logger.info("Loading configuration...");
-        config = new Configuration<FlatConfig>(new File("test.yml"), "/config.yml", FlatConfig.class);
+        config = new Configuration<FlatConfig>(new File("test.yml"), null, FlatConfig.class);
         flat = config.getValue();
 
         if (flat != null) {
@@ -43,7 +41,7 @@ public class Main {
                 logger.info("Loading " + config.uuid);
                 instances.put(UUID.fromString(config.uuid), new Instance(config));
             }
-        }else {
+        } else {
             flat = new FlatConfig();
 
             Scanner scanner = new Scanner(System.in);
@@ -64,7 +62,7 @@ public class Main {
                 }
             }
             InstanceConfig config = new InstanceConfig();
-            config.uuid =  UUID.randomUUID().toString();
+            config.uuid = UUID.randomUUID().toString();
             config.token = token;
             Main.config.save(flat);
             flat.instances.add(config);
@@ -74,8 +72,8 @@ public class Main {
     }
 
     public static File getDirectory(String name) throws IOException {
-        File file =  new File(
-                System.getProperty("user.dir") +File.separator + name
+        File file = new File(
+                System.getProperty("user.dir") + File.separator + name
         );
         file.mkdirs();
         return file;

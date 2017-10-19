@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.hooks.SubscribeEvent;
 import java.util.HashMap;
 
 @RequiredArgsConstructor
-public class CommandManager  {
+public class CommandManager {
     private final Instance instance;
 
     private HashMap<String, Command> commandNameMap = new HashMap<>();
@@ -44,8 +44,7 @@ public class CommandManager  {
     }
 
     @SubscribeEvent
-    public void onMessageReceived(MessageReceivedEvent event)
-    {
+    public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getContent();
         if (message.indexOf("!") == 0) {
             String command = message.split(" ")[0].substring(1);
@@ -62,20 +61,20 @@ public class CommandManager  {
                             event.getTextChannel();
                     if (response instanceof String) {
                         channel.sendMessage((String) response).submit(true);
-                    }else if (response instanceof Message)
+                    } else if (response instanceof Message)
                         channel.sendMessage((Message) response).submit(true);
                     else if (response instanceof Iterable) {
                         for (Object o :
-                                (Iterable)response) {
+                                (Iterable) response) {
                             if (o instanceof String) {
                                 channel.sendMessage((String) o).submit(true);
-                            }else if (o instanceof Message)
+                            } else if (o instanceof Message)
                                 channel.sendMessage((Message) o).submit(true);
                         }
                     }
                 }
-            }else
-                instance.getLogger().info("Command " +command + " not found.");
+            } else
+                instance.getLogger().info("Command " + command + " not found.");
         }
     }
 }

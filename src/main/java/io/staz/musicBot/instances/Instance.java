@@ -1,6 +1,5 @@
 package io.staz.musicBot.instances;
 
-import com.typesafe.config.Config;
 import io.staz.musicBot.audio.AudioAPI;
 import io.staz.musicBot.command.CommandManager;
 import io.staz.musicBot.configSettings.InstanceConfig;
@@ -17,15 +16,13 @@ import org.apache.logging.log4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 
 public class Instance {
     @Getter
-    private InstanceConfig config;
-
-    @Getter
     private final Logger logger;
+    @Getter
+    private InstanceConfig config;
     @Getter
     private JDA jda;
 
@@ -59,19 +56,19 @@ public class Instance {
     public void connect() throws LoginException, InterruptedException, RateLimitedException {
         logger.info("Connecting with Token [redacted]");
 
-            jda = new JDABuilder(AccountType.BOT).
-                    setAutoReconnect(true).
-                    setStatus(OnlineStatus.ONLINE).
-                    setToken(config.token).
-                    setEventManager(new AnnotatedEventManager()).
-                    addEventListener(this).
-                    buildBlocking();
-            logger.info("Connected!");
+        jda = new JDABuilder(AccountType.BOT).
+                setAutoReconnect(true).
+                setStatus(OnlineStatus.ONLINE).
+                setToken(config.token).
+                setEventManager(new AnnotatedEventManager()).
+                addEventListener(this).
+                buildBlocking();
+        logger.info("Connected!");
 
-            // Todo Move this
-            logger.debug("Registering listeners...");
-            this.jda.addEventListener(this.pluginManager, this.commandManager);
-            this.pluginManager.getPlugins().values().forEach((plugin) -> this.getJda().addEventListener(plugin));
+        // Todo Move this
+        logger.debug("Registering listeners...");
+        this.jda.addEventListener(this.pluginManager, this.commandManager);
+        this.pluginManager.getPlugins().values().forEach((plugin) -> this.getJda().addEventListener(plugin));
     }
 
     public void disconnect() {
