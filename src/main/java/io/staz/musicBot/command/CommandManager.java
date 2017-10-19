@@ -77,4 +77,11 @@ public class CommandManager {
                 instance.getLogger().info("Command " + command + " not found.");
         }
     }
+
+    public void addCommands(Command[] commands) {
+        for (Command command :
+                commands) {
+            addCommand(command);
+        }
+    }
 }

@@ -1,43 +1,40 @@
 package io.staz.musicBot.plugin;
 
-import io.staz.musicBot.command.Command;
+import io.staz.musicBot.api.Configuration;
+import io.staz.musicBot.command.CommandManager;
 import io.staz.musicBot.instances.Instance;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+
+@RequiredArgsConstructor
 public abstract class Plugin {
 
     @Getter
-    private Instance instance;
+    private final Instance instance;
+    @Getter
+    private final PluginInfo info;
 
-    public void registerCommand(Command command) {
-        this.instance.getCommandManager().addCommand(command);
+    public Logger getLogger() {
+        return instance.getLogger();
     }
 
-    public void unregisterCommand(Command command) {
-        this.instance.getCommandManager().removeCommand(command);
+    public <T> Configuration<T> getConfig(String name, Class<T> klass) {
+        return new
+                Configuration<T>(new File(name), "/" + name, klass);
     }
 
-    public void registerEventListener(Object listener) {
-        this.instance.getJda().addEventListener(listener);
+    public <T> Configuration<T> getDefaultConfig(Class<T> klass) {
+        return getConfig("/" + info.id + ".yml", klass);
     }
 
-    public void onLoad() {
+    public void onLoad() {}
 
+    public void onSave() {}
+
+    public CommandManager getCommandManager() {
+        return  instance.getCommandManager();
     }
-
-    public void onSave() {
-
-    }
-
-    public void onStop() {
-
-    }
-
-    public abstract String getID();
-
-    public abstract String getName();
-
-    public abstract String[] configs();
-
-    public abstract Command[] commands();
 }
