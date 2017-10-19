@@ -42,14 +42,6 @@ public class Instance {
 
         init();
         connect();
-        reigsterListeners();
-    }
-
-    public Instance(InstanceConfig config, JDA jda) throws IOException, NoSuchFieldException, InstantiationException, IllegalAccessException {
-        this.config = config;
-        this.logger = LogManager.getLogger("Instance " + config.uuid);
-        init();
-        reigsterListeners();
     }
 
     public void init() throws InstantiationException, IllegalAccessException, NoSuchFieldException, IOException {
@@ -72,9 +64,7 @@ public class Instance {
                 addEventListener(this).
                 buildBlocking();
         logger.info("Connected!");
-}
 
-    private void reigsterListeners() {
         // Todo Move this
         logger.debug("Registering listeners...");
         this.jda.addEventListener(this.pluginManager, this.commandManager);

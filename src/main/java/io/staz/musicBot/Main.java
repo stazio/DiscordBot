@@ -66,7 +66,7 @@ public class Main {
             config.token = token;
             flat.instances.add(config);
             Main.config.save(flat);
-            instances.put(UUID.fromString(config.uuid), new Instance(config, jda));
+            instances.put(UUID.fromString(config.uuid), new Instance(config));
         }
 
     }
