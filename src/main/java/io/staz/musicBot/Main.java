@@ -4,6 +4,7 @@ import io.staz.musicBot.api.Configuration;
 import io.staz.musicBot.configSettings.FlatConfig;
 import io.staz.musicBot.configSettings.InstanceConfig;
 import io.staz.musicBot.instances.Instance;
+import lombok.Getter;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -18,7 +19,9 @@ import java.util.*;
 
 public class Main {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = Main.class.getPackage().getImplementationVersion() != null;
+    @Getter
+    public static final String version = Main.class.getPackage().getImplementationVersion() != null ? Main.class.getPackage().getImplementationVersion() : "DEV";
 
     public static final Logger logger = LogManager.getLogger("Main");
     private static final Map<UUID, Instance> instances = new HashMap<>();
@@ -28,7 +31,7 @@ public class Main {
     public static void main(String[] args) throws LoginException, RateLimitedException, InstantiationException, InterruptedException, IllegalAccessException, NoSuchFieldException, IOException {
         logger.info("Initialing....");
         logger.info("Is Debugging Mode? " + DEBUG);
-        logger.info("Version: indev"); // TODO
+        logger.info("Version: " + version); // TODO
 
         logger.info("Loading configuration...");
         config = new Configuration<FlatConfig>(new File("config.yml"), null, FlatConfig.class);
