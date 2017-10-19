@@ -13,6 +13,8 @@ public abstract class Command {
     private final Plugin plugin;
 
     public abstract Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event);
+
     public abstract String[] getAliases();
+
     public abstract String getName();
 }

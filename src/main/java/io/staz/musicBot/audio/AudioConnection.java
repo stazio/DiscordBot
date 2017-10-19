@@ -14,8 +14,8 @@ import net.dv8tion.jda.core.managers.AudioManager;
 
 public class AudioConnection extends AudioEventAdapter {
 
-    private AudioPlayerManager playerManager;
     protected AudioPlayer player;
+    private AudioPlayerManager playerManager;
 
     public AudioConnection(VoiceChannel channel) {
         AudioManager manager = channel.getGuild().getAudioManager();
@@ -58,7 +58,7 @@ public class AudioConnection extends AudioEventAdapter {
         playerManager.loadItem(url, handler);
     }
 
-    public void stop(){
+    public void stop() {
         this.player.stopTrack();
     }
 
@@ -73,5 +73,9 @@ public class AudioConnection extends AudioEventAdapter {
     public void playTrack(AudioTrack queued) {
         System.out.println(queued.getIdentifier());
         this.player.playTrack(queued);
+    }
+
+    public boolean isActive() {
+        return true; // TODO figure this out.
     }
 }

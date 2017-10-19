@@ -8,26 +8,27 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Set;
 
 @RequiredArgsConstructor
 public class PluginManager {
+    private static Set<Class<? extends Plugin>> pluginClasses = null;
     @Getter
     private final Instance instance;
-
     @Getter
     private final HashMap<String, Plugin> plugins = new HashMap<>();
+
+    @SneakyThrows
+    private static void loadPlugins(boolean reload) throws IOException {
+        if (reload || pluginClasses == null) {
+            Reflections reflections = new Reflections();
+            pluginClasses = reflections.getSubTypesOf(Plugin.class);
+        }
+    }
 
     public Plugin getPlugin(String name) {
         return plugins.get(name);
@@ -38,7 +39,7 @@ public class PluginManager {
         return this;
     }
 
-    public PluginManager createPlugin(Class<?extends  Plugin> klass) throws IllegalAccessException, InstantiationException, NoSuchFieldException {
+    public PluginManager createPlugin(Class<? extends Plugin> klass) throws IllegalAccessException, InstantiationException, NoSuchFieldException {
         Plugin plugin = klass.newInstance();
         instance.getLogger().info("Loading plugin: " + plugin.getName() + " - " + plugin.getID());
 
@@ -70,14 +71,5 @@ public class PluginManager {
             this.createPlugin(pluginClass);
         }
         Main.logger.info("Loaded plugins...");
-    }
-
-    private static Set<Class<? extends Plugin>> pluginClasses = null;
-    @SneakyThrows
-    private static void loadPlugins(boolean reload) throws IOException {
-        if (reload || pluginClasses == null) {
-            Reflections reflections = new Reflections();
-            pluginClasses = reflections.getSubTypesOf(Plugin.class);
-        }
     }
 }

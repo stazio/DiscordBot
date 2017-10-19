@@ -1,0 +1,13 @@
+.idea
+.gradle
+build
+out
+run
+.gitignore
+
+gradle
+gradlew.bat
+gradlew
+resources/application.conf
+
+plugins

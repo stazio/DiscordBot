@@ -3,7 +3,6 @@ package io.staz.musicBot.plugin;
 import io.staz.musicBot.command.Command;
 import io.staz.musicBot.instances.Instance;
 import lombok.Getter;
-import net.dv8tion.jda.core.hooks.EventListener;
 
 public abstract class Plugin {
 
@@ -35,7 +34,10 @@ public abstract class Plugin {
     }
 
     public abstract String getID();
+
     public abstract String getName();
+
     public abstract String[] configs();
+
     public abstract Command[] commands();
 }
