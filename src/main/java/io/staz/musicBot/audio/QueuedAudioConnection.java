@@ -81,6 +81,11 @@ public class QueuedAudioConnection extends AudioConnection {
             playNextSong();
     }
 
+
+    public void clear() {
+        this.queue.clear();
+    }
+
     public void play(String message, LoadErrorHandler errorHandler) {
         val instance = this;
         loadSong(message, new AudioLoadResultHandler() {
