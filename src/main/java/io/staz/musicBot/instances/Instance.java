@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 public class Instance {
     @Getter
     private InstanceConfig config;
+
     @Getter
     private final Logger logger;
     @Getter
@@ -39,7 +40,7 @@ public class Instance {
 
     public Instance(InstanceConfig config) throws IllegalAccessException, InstantiationException, LoginException, InterruptedException, RateLimitedException, NoSuchFieldException, IOException {
         this.config = config;
-        this.logger = LogManager.getLogger("Instance:" + config.uuid);
+        this.logger = LogManager.getLogger("Instance " + config.uuid);
         logger.info("Loading Instance: " + logger.getName());
 
         init();
