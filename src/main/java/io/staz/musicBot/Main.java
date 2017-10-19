@@ -31,7 +31,7 @@ public class Main {
         logger.info("Version: indev"); // TODO
 
         logger.info("Loading configuration...");
-        config = new Configuration<FlatConfig>(new File("test.yml"), null, FlatConfig.class);
+        config = new Configuration<FlatConfig>(new File("config.yml"), null, FlatConfig.class);
         flat = config.getValue();
 
         if (flat != null) {
@@ -64,8 +64,8 @@ public class Main {
             InstanceConfig config = new InstanceConfig();
             config.uuid = UUID.randomUUID().toString();
             config.token = token;
-            Main.config.save(flat);
             flat.instances.add(config);
+            Main.config.save(flat);
             instances.put(UUID.fromString(config.uuid), new Instance(config));
         }
 
