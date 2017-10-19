@@ -2,6 +2,9 @@ package io.staz.musicBot;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.staz.musicBot.api.Configuration;
+import io.staz.musicBot.configSettings.FlatConfig;
+import io.staz.musicBot.configSettings.InstanceConfig;
 import io.staz.musicBot.instances.Instance;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +25,8 @@ public class Main {
 
     public static final Logger logger = LogManager.getLogger("Main");
 
-    private static Config config;
+    private static Configuration<FlatConfig> config;
+    private static FlatConfig flat;
 
     private static final Map<UUID, Instance> instances = new HashMap<>();
 
@@ -32,13 +36,14 @@ public class Main {
         logger.info("Version: indev"); // TODO
 
         logger.info("Loading configuration...");
-        config = ConfigFactory.load();
+        config = new Configuration<FlatConfig>(new File("test.yml"), "/config.yml", FlatConfig.class);
+        flat = config.getValue();
 
         logger.info("Loading instances...");
-        List<? extends Config> configs = config.getConfigList("instances");
-        for (Config config : configs) {
-            logger.info("Loading " + config.getString("uuid"));
-            instances.put(UUID.fromString(config.getString("uuid")), new Instance(config));
+        List<InstanceConfig> configs = flat.instances;
+        for (InstanceConfig config : configs) {
+            logger.info("Loading " + config.uuid);
+            instances.put(UUID.fromString(config.uuid), new Instance(config));
         }
     }
 

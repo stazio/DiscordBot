@@ -31,7 +31,7 @@ public class Configuration<T> {
         else {
             if (resource != null) {
                 value = mapper.readValue(
-                        Main.class.getResource(resource).getFile(),
+                        Main.class.getResource(resource),
                         klass
                 );
             }

@@ -3,6 +3,7 @@ package io.staz.musicBot.instances;
 import com.typesafe.config.Config;
 import io.staz.musicBot.audio.AudioAPI;
 import io.staz.musicBot.command.CommandManager;
+import io.staz.musicBot.configSettings.InstanceConfig;
 import io.staz.musicBot.plugin.PluginManager;
 import lombok.Getter;
 import net.dv8tion.jda.core.AccountType;
@@ -21,7 +22,7 @@ import java.net.MalformedURLException;
 
 public class Instance {
     @Getter
-    private Config config;
+    private InstanceConfig config;
     @Getter
     private final Logger logger;
     @Getter
@@ -36,9 +37,9 @@ public class Instance {
     @Getter
     private AudioAPI audioAPI;
 
-    public Instance(Config config) throws IllegalAccessException, InstantiationException, LoginException, InterruptedException, RateLimitedException, NoSuchFieldException, IOException {
+    public Instance(InstanceConfig config) throws IllegalAccessException, InstantiationException, LoginException, InterruptedException, RateLimitedException, NoSuchFieldException, IOException {
         this.config = config;
-        this.logger = LogManager.getLogger("Instance:" + config.getString("uuid"));
+        this.logger = LogManager.getLogger("Instance:" + config.uuid);
         logger.info("Loading Instance: " + logger.getName());
 
         init();
@@ -60,7 +61,7 @@ public class Instance {
             jda = new JDABuilder(AccountType.BOT).
                     setAutoReconnect(true).
                     setStatus(OnlineStatus.ONLINE).
-                    setToken(config.getString("token")).
+                    setToken(config.token).
                     setEventManager(new AnnotatedEventManager()).
                     addEventListener(this).
                     buildBlocking();
