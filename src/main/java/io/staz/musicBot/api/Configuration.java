@@ -1,48 +1,53 @@
 package io.staz.musicBot.api;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigValue;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.staz.musicBot.Main;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.net.URL;
 
-public class Configuration {
-
-    private Config config;
+public class Configuration<T> {
 
     private final File file;
-    private String resourceName;
+    private String resource;
 
-    public Configuration(File file, String resourceName) {
+    private
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+
+    @Getter
+    @Setter
+    private T value;
+
+    @SneakyThrows
+    public Configuration(File file, String resource, Class<T> klass) {
         this.file = file;
-        this.resourceName = resourceName;
+        this.resource = resource;
 
-        this.config = ConfigFactory.parseFile(file);
+        if (this.file.exists())
+            value = mapper.readValue(file, klass);
+        else {
+            if (resource != null) {
+                value = mapper.readValue(
+                        Main.class.getResource(resource).getFile(),
+                        klass
+                );
+            }
+        }
+    }
+
+    public Configuration(File file, Class<T> klass) {
+        this(file, null, klass);
+    }
+
+    public void save() {
+        save(value);
     }
 
     @SneakyThrows
-    public void load() {
-        if (!this.file.exists()) {
-            if (this.resourceName != null) {
-                URL input = getClass().getResource(resourceName);
-                FileUtils.copyURLToFile(input, file);
-            }
-        }
-
-        if (this.file.exists())
-            this.config = ConfigFactory.parseFile(file);
-        else
-            this.config = ConfigFactory.empty();
-    }
-
-    public void set(String name, ConfigValue value) {
-    }
-
-    public Configuration(File file) {
-        this(file, null);
+    public void save(T value) {
+        mapper.writeValue(file, value);
     }
 }
