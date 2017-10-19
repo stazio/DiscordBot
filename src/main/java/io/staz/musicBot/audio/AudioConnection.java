@@ -74,4 +74,8 @@ public class AudioConnection extends AudioEventAdapter {
         System.out.println(queued.getIdentifier());
         this.player.playTrack(queued);
     }
+
+    public boolean isActive() {
+        return true; // TODO figure this out.
+    }
 }
