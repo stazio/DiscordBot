@@ -45,11 +45,11 @@ public class Instance {
     }
 
     public void init() throws InstantiationException, IllegalAccessException, NoSuchFieldException, IOException {
-        this.pluginManager = new PluginManager(this);
         this.commandManager = new CommandManager(this);
+        this.pluginManager = new PluginManager(this);
         this.audioAPI = new AudioAPI(this);
 
-        this.pluginManager.loadAll();
+        this.pluginManager.loadAllPlugins();
     }
 
 

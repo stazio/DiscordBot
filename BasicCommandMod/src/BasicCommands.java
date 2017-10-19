@@ -4,7 +4,9 @@ import io.staz.musicBot.audio.LoadErrorHandler;
 import io.staz.musicBot.audio.QueuedAudioConnection;
 import io.staz.musicBot.command.Command;
 import io.staz.musicBot.command.SimpleCommand;
+import io.staz.musicBot.instances.Instance;
 import io.staz.musicBot.plugin.Plugin;
+import io.staz.musicBot.plugin.PluginInfo;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -15,24 +17,14 @@ public class BasicCommands extends Plugin {
     private QueuedAudioConnection connection;
     private User connectedTo;
 
-    @Override
-    public String getID() {
-        return "io.staz.BasicCommands";
+
+    public BasicCommands(Instance instance, PluginInfo info) {
+        super(instance, info);
     }
 
     @Override
-    public String getName() {
-        return "Basic Commands";
-    }
-
-    @Override
-    public String[] configs() {
-        return new String[0];
-    }
-
-    @Override
-    public Command[] commands() {
-        return new Command[]{
+    public void onLoad() {
+        getCommandManager().addCommands(new Command[]{
                 new SimpleCommand(this, "play") {
 
                     @Override
@@ -120,7 +112,7 @@ public class BasicCommands extends Plugin {
                         return null;
                     }
                 }
-        };
+        });
     }
 
     public QueuedAudioConnection getConnection(User author) {

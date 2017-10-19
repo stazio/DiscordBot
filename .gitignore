@@ -10,4 +10,4 @@ gradlew.bat
 gradlew
 resources/application.conf
 
-plugins
+/BasicCommandMod/BasicCommandMod.iml
