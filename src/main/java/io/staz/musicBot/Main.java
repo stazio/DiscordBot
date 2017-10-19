@@ -52,10 +52,10 @@ public class Main {
             logger.info("TODO");
 
             JDA jda = null;
-
+            String token = null;
             while (jda == null) {
                 logger.info("Please enter the token here:");
-                String token = scanner.next();
+                token = scanner.next();
                 logger.info("Attempting to use token....");
                 try {
                     jda = new JDABuilder(AccountType.BOT).setToken(token).buildBlocking();
@@ -65,7 +65,8 @@ public class Main {
             }
             InstanceConfig config = new InstanceConfig();
             config.uuid =  UUID.randomUUID().toString();
-
+            config.token = token;
+            Main.config.save(flat);
             flat.instances.add(config);
             instances.put(UUID.fromString(config.uuid), new Instance(config));
         }
