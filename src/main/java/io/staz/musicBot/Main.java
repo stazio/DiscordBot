@@ -1,11 +1,12 @@
 package io.staz.musicBot;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import io.staz.musicBot.api.Configuration;
 import io.staz.musicBot.configSettings.FlatConfig;
 import io.staz.musicBot.configSettings.InstanceConfig;
 import io.staz.musicBot.instances.Instance;
+import net.dv8tion.jda.core.AccountType;
+import net.dv8tion.jda.core.JDA;
+import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,11 +14,7 @@ import org.apache.logging.log4j.Logger;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class Main {
 
@@ -39,12 +36,40 @@ public class Main {
         config = new Configuration<FlatConfig>(new File("test.yml"), "/config.yml", FlatConfig.class);
         flat = config.getValue();
 
-        logger.info("Loading instances...");
-        List<InstanceConfig> configs = flat.instances;
-        for (InstanceConfig config : configs) {
-            logger.info("Loading " + config.uuid);
+        if (flat != null) {
+            logger.info("Loading instances...");
+            List<InstanceConfig> configs = flat.instances;
+            for (InstanceConfig config : configs) {
+                logger.info("Loading " + config.uuid);
+                instances.put(UUID.fromString(config.uuid), new Instance(config));
+            }
+        }else {
+            flat = new FlatConfig();
+
+            Scanner scanner = new Scanner(System.in);
+            logger.info("This is your first time using the Music bot!");
+            logger.info("Please follow the instructions here to create a Discord token.");
+            logger.info("TODO");
+
+            JDA jda = null;
+
+            while (jda == null) {
+                logger.info("Please enter the token here:");
+                String token = scanner.next();
+                logger.info("Attempting to use token....");
+                try {
+                    jda = new JDABuilder(AccountType.BOT).setToken(token).buildBlocking();
+                } catch (LoginException e) {
+                    logger.info(e.getMessage());
+                }
+            }
+            InstanceConfig config = new InstanceConfig();
+            config.uuid =  UUID.randomUUID().toString();
+
+            flat.instances.add(config);
             instances.put(UUID.fromString(config.uuid), new Instance(config));
         }
+
     }
 
     public static File getDirectory(String name) throws IOException {
