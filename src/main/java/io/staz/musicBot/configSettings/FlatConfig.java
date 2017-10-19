@@ -5,5 +5,5 @@ import java.util.List;
 
 public class FlatConfig {
 
-    public List<InstanceConfig> instances;
+    public List<InstanceConfig> instances = new ArrayList<>();
 }
