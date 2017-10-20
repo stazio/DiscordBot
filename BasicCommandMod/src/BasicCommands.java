@@ -29,6 +29,14 @@ public class BasicCommands extends Plugin {
     @Override
     public void onLoad() {
         getCommandManager().addCommands(new Command[]{
+                new SimpleCommand(this, "join") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        if (getGuild().getAudioManager().getQueuedAudioConnection(event.getAuthor()).isPresent())
+                            return null;
+                        return "Could not find where you are!";
+                    }
+                },
                 new SimpleCommand(this, "commands") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
