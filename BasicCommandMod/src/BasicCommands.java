@@ -8,6 +8,7 @@ import io.staz.musicBot.command.SimpleCommand;
 import io.staz.musicBot.instances.Instance;
 import io.staz.musicBot.plugin.Plugin;
 import io.staz.musicBot.plugin.PluginInfo;
+import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.commons.collections4.BidiMap;
@@ -29,6 +30,15 @@ public class BasicCommands extends Plugin {
     @Override
     public void onLoad() {
         getCommandManager().addCommands(new Command[]{
+                new SimpleCommand(this, "commands") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        MessageBuilder response = new MessageBuilder();
+                        getInstance().getCommandManager().getCommandNameMap().keySet().forEach(s -> response.append(s).append("\n"));
+                        return response.buildAll();
+                    }
+                },
+
                 new SimpleCommand(this, "search") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
