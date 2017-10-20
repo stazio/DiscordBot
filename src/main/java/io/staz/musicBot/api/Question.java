@@ -1,7 +1,7 @@
 package io.staz.musicBot.api;
 
 
-import io.staz.musicBot.instances.Instance;
+import io.staz.musicBot.guild.GuildConnection;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class Question {
     private final MessageChannel channel;
 
     @Getter
-    private final Instance instance;
+    private final GuildConnection guild;
 
     @Getter
     private IResponse response;
@@ -67,7 +67,7 @@ public class Question {
     }
 
     public void ask() {
-        instance.getJda().addEventListener(this);
+        guild.getInstance().getJda().addEventListener(this);
 
         StringBuilder builder = new StringBuilder();
 
@@ -97,12 +97,12 @@ public class Question {
                 String response = event.getMessage().getContent().trim();
                 if (numericQuestions != null && numericQuestions.containsKey(response)) {
                     if (getResponse().onResponse(event, numericQuestions.get(response))) {
-                        getInstance().getJda().removeEventListener(this);
+                        getGuild().getInstance().getJda().removeEventListener(this);
                         return;
                     }
                 } else if (answerMap.containsKey(response)) {
                     if (getResponse().onResponse(event, response)) {
-                        getInstance().getJda().removeEventListener(this);
+                        getGuild().getInstance().getJda().removeEventListener(this);
                         return;
                     }
                 }

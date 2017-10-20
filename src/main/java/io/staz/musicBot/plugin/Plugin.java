@@ -2,6 +2,7 @@ package io.staz.musicBot.plugin;
 
 import io.staz.musicBot.api.Configuration;
 import io.staz.musicBot.command.CommandManager;
+import io.staz.musicBot.guild.GuildConnection;
 import io.staz.musicBot.instances.Instance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,12 @@ import java.io.File;
 public abstract class Plugin {
 
     @Getter
-    private final Instance instance;
+    private final GuildConnection guild;
     @Getter
     private final PluginInfo info;
 
     public Logger getLogger() {
-        return instance.getLogger();
+        return guild.getLogger();
     }
 
     public <T> Configuration<T> getConfig(String name, Class<T> klass) {
@@ -37,6 +38,6 @@ public abstract class Plugin {
     }
 
     public CommandManager getCommandManager() {
-        return instance.getCommandManager();
+        return guild.getCommandManager();
     }
 }

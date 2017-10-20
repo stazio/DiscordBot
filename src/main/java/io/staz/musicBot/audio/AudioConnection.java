@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import lombok.Getter;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 
@@ -17,7 +18,11 @@ public class AudioConnection extends AudioEventAdapter {
     protected AudioPlayer player;
     private AudioPlayerManager playerManager;
 
+    @Getter
+    private final VoiceChannel channel;
+
     public AudioConnection(VoiceChannel channel) {
+        this.channel = channel;
         AudioManager manager = channel.getGuild().getAudioManager();
 
         playerManager = new DefaultAudioPlayerManager();

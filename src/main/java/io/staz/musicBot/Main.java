@@ -24,7 +24,7 @@ public class Main {
     public static final String version = Main.class.getPackage().getImplementationVersion() != null ? Main.class.getPackage().getImplementationVersion() : "DEV";
 
     public static final Logger logger = LogManager.getLogger("Main");
-    private static final Map<UUID, Instance> instances = new HashMap<>();
+    private static Instance instance;
     private static Configuration<FlatConfig> config;
     private static FlatConfig flat;
 
@@ -38,12 +38,7 @@ public class Main {
         flat = config.getValue();
 
         if (flat != null) {
-            logger.info("Loading instances...");
-            List<InstanceConfig> configs = flat.instances;
-            for (InstanceConfig config : configs) {
-                logger.info("Loading " + config.uuid);
-                instances.put(UUID.fromString(config.uuid), new Instance(config));
-            }
+            instance = new Instance(flat.instance);
         } else {
             flat = new FlatConfig();
 
@@ -67,18 +62,10 @@ public class Main {
             InstanceConfig config = new InstanceConfig();
             config.uuid = UUID.randomUUID().toString();
             config.token = token;
-            flat.instances.add(config);
+            flat.instance = config;
             Main.config.save(flat);
-            instances.put(UUID.fromString(config.uuid), new Instance(config));
+            instance = new Instance(config);
         }
 
-    }
-
-    public static File getDirectory(String name) throws IOException {
-        File file = new File(
-                System.getProperty("user.dir") + File.separator + name
-        );
-        file.mkdirs();
-        return file;
     }
 }

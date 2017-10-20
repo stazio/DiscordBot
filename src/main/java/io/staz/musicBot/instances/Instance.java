@@ -1,24 +1,26 @@
 package io.staz.musicBot.instances;
 
-import io.staz.musicBot.audio.AudioAPI;
-import io.staz.musicBot.command.CommandManager;
+import io.staz.musicBot.Main;
 import io.staz.musicBot.configSettings.InstanceConfig;
-import io.staz.musicBot.plugin.PluginManager;
+import io.staz.musicBot.guild.GuildConnection;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.OnlineStatus;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
+import net.dv8tion.jda.core.events.DisconnectEvent;
+import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.AnnotatedEventManager;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.hooks.SubscribeEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.security.auth.login.LoginException;
-import java.io.IOException;
+import java.util.HashSet;
 
 
-public class Instance {
+public class Instance  extends ListenerAdapter{
     @Getter
     private final Logger logger;
     @Getter
@@ -26,54 +28,52 @@ public class Instance {
     @Getter
     private JDA jda;
 
-    @Getter
-    private PluginManager pluginManager;
+    private HashSet<GuildConnection> guilds = new HashSet<>();
 
-    @Getter
-    private CommandManager commandManager;
-
-    @Getter
-    private AudioAPI audioAPI;
-
-    public Instance(InstanceConfig config) throws IllegalAccessException, InstantiationException, LoginException, InterruptedException, RateLimitedException, NoSuchFieldException, IOException {
+    public Instance(InstanceConfig config) {
         this.config = config;
-        this.logger = LogManager.getLogger("Instance " + config.uuid);
-        logger.info("Loading Instance: " + logger.getName());
+        this.logger = LogManager.getLogger("Instance " + config.name);
+        logger.info("Loading Instance: " + config.name);
 
-        init();
         connect();
     }
 
-    public void init() throws InstantiationException, IllegalAccessException, NoSuchFieldException, IOException {
-        this.commandManager = new CommandManager(this);
-        this.pluginManager = new PluginManager(this);
-        this.audioAPI = new AudioAPI(this);
+    @SneakyThrows
+    public void connect() {
+        if (Main.DEBUG)
+            logger.info("Connecting with token " + config.token);
+        else
+            logger.info("Connecting...");
 
-        this.pluginManager.loadAllPlugins();
-    }
-
-
-    public void connect() throws LoginException, InterruptedException, RateLimitedException {
-        logger.info("Connecting with Token [redacted]");
-
-        jda = new JDABuilder(AccountType.BOT).
+        this.jda = new JDABuilder(AccountType.BOT).
                 setAutoReconnect(true).
                 setStatus(OnlineStatus.ONLINE).
                 setToken(config.token).
                 setEventManager(new AnnotatedEventManager()).
                 addEventListener(this).
-                buildBlocking();
-        logger.info("Connected!");
-
-        // Todo Move this
-        logger.debug("Registering listeners...");
-        this.jda.addEventListener(this.pluginManager, this.commandManager);
-        this.pluginManager.getPlugins().values().forEach((plugin) -> this.getJda().addEventListener(plugin));
+                buildAsync();
     }
 
     public void disconnect() {
         logger.info("Disconnecting...");
         jda.shutdown();
+    }
+
+    @Override
+    @SubscribeEvent
+    public void onReady(ReadyEvent event) {
+        logger.info("Connected.");
+        getJda().getGuilds().forEach(guild -> {
+            GuildConnection guildConn = new GuildConnection(guild, this);
+            guilds.add(guildConn);
+            guildConn.onLoad();
+        });
+    }
+
+    @SubscribeEvent
+    @Override
+    public void onDisconnect(DisconnectEvent event) {
         logger.info("Disconnected.");
+        guilds.forEach(GuildConnection::onUnload);
     }
 }
