@@ -1,4 +1,5 @@
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import io.staz.musicBot.api.Question;
 import io.staz.musicBot.audio.AudioConnection;
 import io.staz.musicBot.audio.LoadErrorHandler;
 import io.staz.musicBot.audio.QueuedAudioConnection;
@@ -9,9 +10,12 @@ import io.staz.musicBot.plugin.Plugin;
 import io.staz.musicBot.plugin.PluginInfo;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.apache.commons.collections4.BidiMap;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BasicCommands extends Plugin {
     private QueuedAudioConnection connection;
@@ -25,12 +29,28 @@ public class BasicCommands extends Plugin {
     @Override
     public void onLoad() {
         getCommandManager().addCommands(new Command[]{
-                new SimpleCommand(this, "play") {
+                new SimpleCommand(this, "search") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        Map<String, String> answers = YTSearch.search(message.trim());
 
+                        new Question(event.getChannel(), getInstance()).
+                                setAnswers(answers).
+                                setQuestion("Which song do you wish to play?").
+                                setNumericQuestions(true).
+                                onResponse((event1, answer) ->
+                                {
+                                    event.getChannel().sendMessage("Playing song: " + answers.get(answer)).complete();
+                                    getInstance().getAudioAPI().playSongTo(event, answer);
+                                    return true;
+                                }).ask();
+                        return null;
+                    }
+                },
+                new SimpleCommand(this, "play") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         AudioConnection conn = getConnection(event.getAuthor());
-
                         if (conn != null) {
                             conn.playSong(message, new LoadErrorHandler.DEFAULT(event.getChannel()));
                             return null;
@@ -73,14 +93,6 @@ public class BasicCommands extends Plugin {
                         if (list.size() == 0)
                             return "No songs queued!";
                         return list;
-                    }
-                },
-                new SimpleCommand(this, "stop") {
-
-                    @Override
-                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        getInstance().getAudioAPI().stop();
-                        return null;
                     }
                 },
                 new SimpleCommand(this, "clear") {

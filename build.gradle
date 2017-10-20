@@ -37,6 +37,9 @@ dependencies {
 
     // Reflections
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
+
+    // JSON web
+     compile 'org.jsoup:jsoup:1.10.3'
 }
 
 task fatJar(type: Jar) {
