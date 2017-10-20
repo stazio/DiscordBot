@@ -1,6 +1,7 @@
 package io.staz.musicBot.command;
 
 import io.staz.musicBot.instances.Instance;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 public class CommandManager {
     private final Instance instance;
 
+    @Getter
     private HashMap<String, Command> commandNameMap = new HashMap<>();
 
     public CommandManager addCommand(Command command) {
@@ -46,7 +48,7 @@ public class CommandManager {
     @SubscribeEvent
     public void onMessageReceived(MessageReceivedEvent event) {
         String message = event.getMessage().getContent();
-        if (message.indexOf("!") == 0) {
+        if (message.indexOf("!") == 0 && !event.getAuthor().isBot()) {
             String command = message.split(" ")[0].substring(1);
             Command commandAction = getCommand(command);
             if (commandAction != null) {
