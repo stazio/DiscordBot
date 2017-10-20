@@ -12,12 +12,13 @@ import java.util.Map;
 public class YTSearch {
 
     private static String URL = "https://www.googleapis.com/youtube/v3/search?part=snippet&key=AIzaSyCzjqcg1ydoDTLfAICZRwS9PwktYh0tk64";
+
     @SneakyThrows
     public static Map<String, String> search(String name) {
         JSONObject object = execute(URL + "&q=" + URLEncoder.encode(name, "UTF-8"));
-        JSONArray array =  object.getJSONArray("items");
+        JSONArray array = object.getJSONArray("items");
         Map<String, String> map = new HashMap<>();
-        for (int i = 0; i < array.length(); i++ ) {
+        for (int i = 0; i < array.length(); i++) {
             JSONObject obs = array.getJSONObject(i);
             if (obs.has("id") && obs.getJSONObject("id").has("videoId")) {
                 String id = obs.getJSONObject("id").getString("videoId");
@@ -31,7 +32,7 @@ public class YTSearch {
     }
 
     @SneakyThrows
-    public  static JSONObject execute(String urlQuery) {
+    public static JSONObject execute(String urlQuery) {
         Document doc = Jsoup.connect(urlQuery).timeout(10 * 1000).ignoreContentType(true).get();
         return (JSONObject) new JSONTokener(doc.body().text()).nextValue();
     }

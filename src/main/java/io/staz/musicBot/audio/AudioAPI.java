@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
-import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -44,7 +43,7 @@ public class AudioAPI {
                     guild.getVoiceChannels()) {
                 for (Member member : c.getMembers()) {
                     if (member.getUser().equals(event.getAuthor()))
-                    channel = c;
+                        channel = c;
                 }
             }
         }
@@ -52,7 +51,7 @@ public class AudioAPI {
         if (channel != null) {
             AudioConnection connection = createConnection(channel);
             connection.playSong(answer, new LoadErrorHandler.DEFAULT(event.getChannel()));
-        }else {
+        } else {
             event.getChannel().sendMessage("Cannot find your location!").submit();
         }
     }

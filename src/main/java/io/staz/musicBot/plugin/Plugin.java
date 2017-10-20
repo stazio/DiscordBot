@@ -30,11 +30,13 @@ public abstract class Plugin {
         return getConfig("/" + info.id + ".yml", klass);
     }
 
-    public void onLoad() {}
+    public void onLoad() {
+    }
 
-    public void onSave() {}
+    public void onSave() {
+    }
 
     public CommandManager getCommandManager() {
-        return  instance.getCommandManager();
+        return instance.getCommandManager();
     }
 }

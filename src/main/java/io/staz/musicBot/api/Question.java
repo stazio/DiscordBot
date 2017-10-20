@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
-import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.SubscribeEvent;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -75,7 +77,7 @@ public class Question {
                 builder.append(++i).append(" - ").append(answerMap.get(s2)).append("\n");
                 numericQuestions.put(String.valueOf(i), s2);
             }
-        }else {
+        } else {
             answerMap.forEach((s, s2) -> builder.append(s).append(" - ").append(s2).append("\n"));
         }
 
@@ -98,8 +100,7 @@ public class Question {
                         getInstance().getJda().removeEventListener(this);
                         return;
                     }
-                }else
-                if (answerMap.containsKey(response)) {
+                } else if (answerMap.containsKey(response)) {
                     if (getResponse().onResponse(event, response)) {
                         getInstance().getJda().removeEventListener(this);
                         return;
