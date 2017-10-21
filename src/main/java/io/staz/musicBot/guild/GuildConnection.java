@@ -46,4 +46,12 @@ public class GuildConnection {
         logger.info("Saving plugins...");
         this.pluginManager.saveAllPlugins();
     }
+
+    public void disableCommands() {
+        this.getCommandManager().setCommandable(false);
+    }
+
+    public void enableCommands() {
+        this.getCommandManager().setCommandable(true);
+    }
 }
