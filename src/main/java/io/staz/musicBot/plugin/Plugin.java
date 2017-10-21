@@ -4,15 +4,11 @@ import io.staz.musicBot.api.Configuration;
 import io.staz.musicBot.audio.AudioManager;
 import io.staz.musicBot.command.CommandManager;
 import io.staz.musicBot.guild.GuildConnection;
-import io.staz.musicBot.instances.Instance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.FileAttributeView;
 
 @RequiredArgsConstructor
 public abstract class Plugin {
@@ -44,5 +40,7 @@ public abstract class Plugin {
         return guild.getCommandManager();
     }
 
-    public AudioManager getAudioManager() {return guild.getAudioManager();}
+    public AudioManager getAudioManager() {
+        return guild.getAudioManager();
+    }
 }

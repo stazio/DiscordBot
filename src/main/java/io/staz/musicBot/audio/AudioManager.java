@@ -35,7 +35,7 @@ public class AudioManager {
     public Optional<QueuedAudioConnection> getQueuedAudioConnection(User author) {
         Member member = getGuild().getGuild().getMember(author);
         if (member != null) {
-                VoiceState state = member.getVoiceState();
+            VoiceState state = member.getVoiceState();
             if (state != null) {
                 AudioChannel channel = state.getAudioChannel();
                 if (channel != null)

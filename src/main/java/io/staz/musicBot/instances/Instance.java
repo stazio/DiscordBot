@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.HashSet;
 
 
-public class Instance  extends ListenerAdapter{
+public class Instance extends ListenerAdapter {
     @Getter
     private final Logger logger;
     @Getter

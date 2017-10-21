@@ -58,7 +58,7 @@ public class BasicCommands extends Plugin {
                     }
                 },
 
-                 Command.builder().
+                Command.builder().
                         name("join").
                         plugin(this).
                         action((command, message, eventMessage, event) -> {

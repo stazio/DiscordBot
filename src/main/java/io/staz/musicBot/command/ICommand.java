@@ -9,7 +9,9 @@ import java.util.Collection;
 public interface ICommand {
 
     Plugin getPlugin();
+
     String getName();
+
     Collection<String> getAliases();
 
     Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event);

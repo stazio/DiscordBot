@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Builder
-public class Command implements ICommand{
+public class Command implements ICommand {
 
     @Getter
     private String name;

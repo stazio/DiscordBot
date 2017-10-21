@@ -6,9 +6,13 @@ public interface IQuestion<T> {
 
 
     IQuestion setErrorMessage(String error);
+
     IQuestion setResponse(IResponse<T> response);
+
     IQuestion setQuestion(String question);
+
     void ask();
+
     void done();
 
     void onMessage(MessageReceivedEvent event);

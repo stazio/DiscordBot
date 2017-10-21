@@ -1,13 +1,11 @@
 package io.staz.musicBot.plugin;
 
 import io.staz.musicBot.guild.GuildConnection;
-import io.staz.musicBot.instances.Instance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.core.JDA;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 @RequiredArgsConstructor

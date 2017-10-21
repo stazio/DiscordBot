@@ -15,7 +15,8 @@ import org.apache.logging.log4j.Logger;
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Scanner;
+import java.util.UUID;
 
 public class Main {
 

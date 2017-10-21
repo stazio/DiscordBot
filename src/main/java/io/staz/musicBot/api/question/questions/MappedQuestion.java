@@ -112,31 +112,37 @@ public class MappedQuestion extends AbstractQuestion<String> {
 
     @Override
     public MappedQuestion setErrorMessage(String error) {
-         super.setErrorMessage(error); return this;
+        super.setErrorMessage(error);
+        return this;
     }
 
     @Override
     public MappedQuestion setResponse(IResponse<String> response) {
-         super.setResponse(response); return this;
+        super.setResponse(response);
+        return this;
     }
 
     @Override
     public MappedQuestion setQuestion(String question) {
-         super.setQuestion(question); return this;
+        super.setQuestion(question);
+        return this;
     }
 
     @Override
     public MappedQuestion setConnection(GuildConnection connection) {
-         super.setConnection(connection); return this;
+        super.setConnection(connection);
+        return this;
     }
 
     @Override
     public MappedQuestion setChannel(MessageChannel channel) {
-         super.setChannel(channel); return this;
+        super.setChannel(channel);
+        return this;
     }
 
     @Override
     public MappedQuestion setSender(User sender) {
-         super.setSender(sender); return this;
+        super.setSender(sender);
+        return this;
     }
 }
