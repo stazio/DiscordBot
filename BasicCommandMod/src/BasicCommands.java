@@ -1,23 +1,21 @@
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import io.staz.musicBot.api.Question;
-import io.staz.musicBot.audio.AudioConnection;
+import io.staz.musicBot.api.Configuration;
+import io.staz.musicBot.api.question.questions.MappedQuestion;
 import io.staz.musicBot.audio.LoadErrorHandler;
 import io.staz.musicBot.audio.QueuedAudioConnection;
+import io.staz.musicBot.command.BadCommand;
 import io.staz.musicBot.command.Command;
-import io.staz.musicBot.command.SimpleCommand;
+import io.staz.musicBot.command.ICommand;
 import io.staz.musicBot.guild.GuildConnection;
-import io.staz.musicBot.instances.Instance;
 import io.staz.musicBot.plugin.Plugin;
 import io.staz.musicBot.plugin.PluginInfo;
 import lombok.val;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class BasicCommands extends Plugin {
 
@@ -25,19 +23,59 @@ public class BasicCommands extends Plugin {
         super(guild, info);
     }
 
-
     @Override
     public void onLoad() {
-        getCommandManager().addCommands(new Command[]{
-                new SimpleCommand(this, "join") {
+        Configuration<BasicConfig> config = getConfig("config.conf", BasicConfig.class, false);
+        BasicConfig res = config.getValue() != null ? config.getValue() : new BasicConfig();
+
+        res.commands.forEach(command -> getCommandManager().addCommand(new BadCommand(this, command.name) {
+            @Override
+            public Object onCommand(String cmnd, String message, Message eventMessage, MessageReceivedEvent event) {
+                getGuild().getAudioManager().playSongTo(event, command.video, new LoadErrorHandler.DEFAULT(event.getChannel()));
+                return null;
+            }
+        }));
+
+        Plugin instance = this;
+        getCommandManager().addCommands(new ICommand[]{
+                new BadCommand(this, "addsong") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        if (getGuild().getAudioManager().getQueuedAudioConnection(event.getAuthor()).isPresent())
-                            return null;
-                        return "Could not find where you are!";
+                        BasicConfig.CommandConfig commandConfig = new BasicConfig.CommandConfig();
+                        commandConfig.name = message.split(" ")[0];
+                        commandConfig.video = message.substring(commandConfig.name.length());
+
+                        getCommandManager().addCommand(new BadCommand(instance, commandConfig.name) {
+                            @Override
+                            public Object onCommand(String cmnd, String message, Message eventMessage, MessageReceivedEvent event) {
+                                getGuild().getAudioManager().playSongTo(event, commandConfig.video, new LoadErrorHandler.DEFAULT(event.getChannel()));
+                                return null;
+                            }
+                        });
+                        res.commands.add(commandConfig);
+                        config.save();
+                        return null;
                     }
                 },
-                new SimpleCommand(this, "commands") {
+
+                 Command.builder().
+                        name("join").
+                        plugin(this).
+                        action((command, message, eventMessage, event) -> {
+                            if (getGuild().getAudioManager().getQueuedAudioConnection(event.getAuthor()).isPresent())
+                                return null;
+                            return "Could not find where you are!";
+                        }).
+                        build(),
+
+                new BadCommand(this, "leave") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        getAudioManager().close();
+                        return null;
+                    }
+                },
+                new BadCommand(this, "commands") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         MessageBuilder response = new MessageBuilder();
@@ -48,17 +86,18 @@ public class BasicCommands extends Plugin {
                         return response.buildAll();
                     }
                 },
-
-                new SimpleCommand(this, "search") {
+                new BadCommand(this, "search") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         Map<String, String> answers = YTSearch.search(message.trim());
 
-                        new Question(event.getChannel(), getGuild()).
+                        new MappedQuestion().
+                                setChannel(event.getChannel()).
+                                setConnection(getGuild()).
                                 setAnswers(answers).
                                 setQuestion("Which song do you wish to play?").
                                 setNumericQuestions(true).
-                                onResponse((event1, answer) ->
+                                setResponse((event1, answer) ->
                                 {
                                     event.getChannel().sendMessage("Playing song: " + answers.get(answer)).complete();
                                     getGuild().getAudioManager().playSongTo(event, answer, new LoadErrorHandler.DEFAULT(event.getChannel()));
@@ -67,29 +106,29 @@ public class BasicCommands extends Plugin {
                         return null;
                     }
                 },
-                new SimpleCommand(this, "play") {
+                new BadCommand(this, "play") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         getGuild().getAudioManager().playSongTo(event, message, new LoadErrorHandler.DEFAULT(event.getChannel()));
                         return null;
                     }
                 },
-                new SimpleCommand(this, "stop") {
+                new BadCommand(this, "stop") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         getGuild().getAudioManager().stop();
                         return null;
                     }
                 },
-                new SimpleCommand(this, "skip") {
+                new BadCommand(this, "skip") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                       getGuild().getAudioManager().getAudioConnection()
+                        getGuild().getAudioManager().getAudioConnection()
                                 .ifPresent(QueuedAudioConnection::playNextSong);
                         return null;
                     }
                 },
-                new SimpleCommand(this, "list") {
+                new BadCommand(this, "list") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         List<String> list = new ArrayList<>();
@@ -103,20 +142,20 @@ public class BasicCommands extends Plugin {
                         return list;
                     }
                 },
-                new SimpleCommand(this, "clear") {
+                new BadCommand(this, "clear") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         getGuild().getAudioManager().getAudioConnection().ifPresent(QueuedAudioConnection::clear);
                         return null;
                     }
                 },
-                new SimpleCommand(this, "stanislaw") {
+                new BadCommand(this, "stanislaw") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         return "You have entered the Stanislaw.";
                     }
                 },
-                new SimpleCommand(this, "queue") {
+                new BadCommand(this, "queue") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
 
@@ -130,4 +169,5 @@ public class BasicCommands extends Plugin {
                 }
         });
     }
+
 }

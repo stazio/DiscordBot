@@ -1,20 +1,36 @@
 package io.staz.musicBot.command;
 
 import io.staz.musicBot.plugin.Plugin;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-@RequiredArgsConstructor
-public abstract class Command {
+import java.util.Collection;
+import java.util.Collections;
+
+@Builder
+public class Command implements ICommand{
 
     @Getter
-    private final Plugin plugin;
+    private String name;
 
-    public abstract Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event);
+    @Getter
+    @Builder.Default
+    private Collection<String> aliases = Collections.emptyList();
 
-    public abstract String[] getAliases();
+    @Getter
+    private Plugin plugin;
 
-    public abstract String getName();
+    @Getter
+    private CommandAction action;
+
+    @Override
+    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+        return null;
+    }
+
+    public interface CommandAction {
+        Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event);
+    }
 }
