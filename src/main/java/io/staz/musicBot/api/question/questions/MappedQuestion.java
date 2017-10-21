@@ -1,13 +1,14 @@
-package io.staz.musicBot.api;
+package io.staz.musicBot.api.question.questions;
 
 
+import io.staz.musicBot.api.question.AbstractQuestion;
+import io.staz.musicBot.api.question.IQuestion;
 import io.staz.musicBot.guild.GuildConnection;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.SubscribeEvent;
 
@@ -16,37 +17,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
-@AllArgsConstructor
-@RequiredArgsConstructor
-public class Question {
+public class MappedQuestion extends AbstractQuestion<String> {
 
     @Getter
-    private final MessageChannel channel;
-
-    @Getter
-    private final GuildConnection guild;
-
-    @Getter
-    private IResponse response;
-
-    private String question;
+    private IQuestion.IResponse<String> response;
 
     @Getter
     private String errorMessage = "This is not a correct response!";
     private Map<String, String> answerMap;
     private Map<String, String> numericQuestions = null;
 
-    public Question onResponse(IResponse response) {
-        this.response = response;
-        return this;
-    }
-
-    public Question setQuestion(String question) {
-        this.question = question;
-        return this;
-    }
-
-    public Question setAnswers(Collection<String> answers) {
+    public MappedQuestion setAnswers(Collection<String> answers) {
         Map<String, String> map = new HashMap<>();
         int i = 0;
         for (String s : answers) {
@@ -56,18 +37,19 @@ public class Question {
         return setAnswers(map);
     }
 
-    public Question setAnswers(Map<String, String> answers) {
+    public MappedQuestion setAnswers(Map<String, String> answers) {
         this.answerMap = answers;
         return this;
     }
 
-    public Question setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public MappedQuestion setNumericQuestions(boolean numericQuestions) {
+        this.numericQuestions = numericQuestions ? new HashMap<>() : null;
         return this;
     }
 
+    @Override
     public void ask() {
-        guild.getInstance().getJda().addEventListener(this);
+        getConnection().getInstance().getJda().addEventListener(this);
 
         StringBuilder builder = new StringBuilder();
 
@@ -82,42 +64,79 @@ public class Question {
         }
 
         Queue<Message> message = new MessageBuilder().
-                append(question).append("\n").
+                append(getQuestion()).append("\n").
                 append(builder.toString()).
                 buildAll(MessageBuilder.SplitPolicy.NEWLINE);
 
-        message.forEach(message1 -> channel.sendMessage(message1).submit(true));
+        message.forEach(message1 -> getChannel().sendMessage(message1).submit(true));
+        getConnection().disableCommands();
     }
 
+    @Override
+    public void done() {
+
+    }
+
+
     @SubscribeEvent
+    @Override
     public void onMessage(MessageReceivedEvent event) {
-        if (event.getChannel().equals(channel)) {
+        if (event.getChannel().equals(getChannel())) {
             if (!event.getAuthor().isBot()) {
 
                 String response = event.getMessage().getContent().trim();
                 if (numericQuestions != null && numericQuestions.containsKey(response)) {
                     if (getResponse().onResponse(event, numericQuestions.get(response))) {
-                        getGuild().getInstance().getJda().removeEventListener(this);
+                        getConnection().getInstance().getJda().removeEventListener(this);
+                        getConnection().enableCommands();
                         return;
                     }
                 } else if (answerMap.containsKey(response)) {
                     if (getResponse().onResponse(event, response)) {
-                        getGuild().getInstance().getJda().removeEventListener(this);
+                        getConnection().getInstance().getJda().removeEventListener(this);
+                        getConnection().enableCommands();
                         return;
                     }
                 }
 
-                channel.sendMessage(errorMessage).submit();
+                getChannel().sendMessage(errorMessage).submit();
             }
         }
     }
 
-    public Question setNumericQuestions(boolean numericQuestions) {
-        this.numericQuestions = numericQuestions ? new HashMap<>() : null;
-        return this;
+    @Override
+    public String getAnswer(MessageReceivedEvent event) {
+        return null;
     }
 
-    public static interface IResponse {
-        boolean onResponse(MessageReceivedEvent event, String answer);
+
+    @Override
+    public MappedQuestion setErrorMessage(String error) {
+         super.setErrorMessage(error); return this;
+    }
+
+    @Override
+    public MappedQuestion setResponse(IResponse<String> response) {
+         super.setResponse(response); return this;
+    }
+
+    @Override
+    public MappedQuestion setQuestion(String question) {
+         super.setQuestion(question); return this;
+    }
+
+    @Override
+    public MappedQuestion setConnection(GuildConnection connection) {
+         super.setConnection(connection); return this;
+    }
+
+    @Override
+    public MappedQuestion setChannel(MessageChannel channel) {
+         super.setChannel(channel); return this;
+    }
+
+    @Override
+    public MappedQuestion setSender(User sender) {
+         super.setSender(sender); return this;
     }
 }
