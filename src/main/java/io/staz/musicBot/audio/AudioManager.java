@@ -53,5 +53,10 @@ public class AudioManager {
     public void stop() {
         getAudioConnection().ifPresent(QueuedAudioConnection::stop);
     }
+
+    public void close() {
+        getAudioConnection().ifPresent(QueuedAudioConnection::terminate);
+        audio = null;
+    }
 }
 

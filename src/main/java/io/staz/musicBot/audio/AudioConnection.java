@@ -4,11 +4,13 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import lombok.Getter;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
@@ -21,9 +23,12 @@ public class AudioConnection extends AudioEventAdapter {
     @Getter
     private final VoiceChannel channel;
 
+    @Getter
+    private final AudioManager manager;
+
     public AudioConnection(VoiceChannel channel) {
         this.channel = channel;
-        AudioManager manager = channel.getGuild().getAudioManager();
+        manager = channel.getGuild().getAudioManager();
 
         playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
@@ -32,6 +37,7 @@ public class AudioConnection extends AudioEventAdapter {
         manager.setSendingHandler(new AudioPlayerSendHandler(player));
 
         manager.openAudioConnection(channel);
+        player.addListener(this);
     }
 
     public void playSong(String url, LoadErrorHandler handler) {
@@ -81,6 +87,10 @@ public class AudioConnection extends AudioEventAdapter {
     }
 
     public boolean isActive() {
-        return true; // TODO figure this out.
+        return this.manager.isConnected() && this.player != null && this.playerManager != null; // TODO figure this out.
+    }
+
+    public void terminate() {
+        this.manager.closeAudioConnection();
     }
 }
