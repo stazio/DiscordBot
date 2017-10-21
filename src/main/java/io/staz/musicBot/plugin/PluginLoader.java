@@ -19,15 +19,17 @@ public class PluginLoader {
         ArrayList<PluginInfo> pluginInfo = new ArrayList<PluginInfo>();
         if (files != null) {
             for (File file : files) {
-                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                ZipFile zip = new ZipFile(file);
-                ZipEntry entry = zip.getEntry("config.yml");
-                if (entry != null) {
-                    InputStream instream = zip.getInputStream(entry);
-                    PluginInfo info = mapper.readValue(instream, PluginInfo.class);
-                    pluginInfo.add(info);
-                    if (loadPlugin)
-                        loadLibrary(file);
+                if (file.isFile()) {
+                    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                    ZipFile zip = new ZipFile(file);
+                    ZipEntry entry = zip.getEntry("config.yml");
+                    if (entry != null) {
+                        InputStream instream = zip.getInputStream(entry);
+                        PluginInfo info = mapper.readValue(instream, PluginInfo.class);
+                        pluginInfo.add(info);
+                        if (loadPlugin)
+                            loadLibrary(file);
+                    }
                 }
             }
         }
