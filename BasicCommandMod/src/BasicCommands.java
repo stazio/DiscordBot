@@ -91,18 +91,18 @@ public class BasicCommands extends Plugin {
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         Map<String, String> answers = YTSearch.search(message.trim());
 
-                        new MappedQuestion().
-                                setChannel(event.getChannel()).
-                                setConnection(getGuild()).
-                                setAnswers(answers).
-                                setQuestion("Which song do you wish to play?").
-                                setNumericQuestions(true).
-                                setResponse((event1, answer) ->
+                        MappedQuestion.builder().
+                                channel(event.getChannel()).
+                                connection(getGuild()).
+                                answers(answers).
+                                question("Which song do you wish to play?").
+                                useNumericQuestions(true).
+                                response((event1, answer) ->
                                 {
                                     event.getChannel().sendMessage("Playing song: " + answers.get(answer)).complete();
                                     getGuild().getAudioManager().playSongTo(event, answer, new LoadErrorHandler.DEFAULT(event.getChannel()));
                                     return true;
-                                }).ask();
+                                }).build().ask();
                         return null;
                     }
                 },
@@ -124,7 +124,7 @@ public class BasicCommands extends Plugin {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         getGuild().getAudioManager().getAudioConnection()
-                                .ifPresent(QueuedAudioConnection::playNextSong);
+                                .ifPresent(QueuedAudioConnection::playSong);
                         return null;
                     }
                 },
