@@ -2,8 +2,8 @@ package io.staz.musicBot.api.question.questions;
 
 
 import io.staz.musicBot.api.question.AbstractQuestion;
-import io.staz.musicBot.api.question.IQuestion;
 import io.staz.musicBot.guild.GuildConnection;
+import lombok.Builder;
 import lombok.Getter;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.entities.Message;
@@ -17,18 +17,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 
+
 public class MappedQuestion extends AbstractQuestion<String> {
 
     @Getter
-    private IQuestion.IResponse<String> response;
-
-    @Getter
-    private String errorMessage = "This is not a correct response!";
     private Map<String, String> answerMap;
     private Map<String, String> numericQuestions = null;
 
+    @Builder
+    public MappedQuestion(Map<String, String> answers, boolean useNumericQuestions, String errorMessage, IResponse<String> response, String question, GuildConnection connection, MessageChannel channel, User sender) {
+        super(errorMessage, response, question, connection, channel, sender);
+        this.answerMap = answers;
+        if (useNumericQuestions)
+            this.numericQuestions = new HashMap<>();
+    }
+
     public MappedQuestion setAnswers(Collection<String> answers) {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String
+                > map = new HashMap<>();
         int i = 0;
         for (String s : answers) {
             i++;
@@ -99,7 +105,7 @@ public class MappedQuestion extends AbstractQuestion<String> {
                     }
                 }
 
-                getChannel().sendMessage(errorMessage).submit();
+                getChannel().sendMessage(getErrorMessage()).submit();
             }
         }
     }
@@ -107,42 +113,5 @@ public class MappedQuestion extends AbstractQuestion<String> {
     @Override
     public String getAnswer(MessageReceivedEvent event) {
         return null;
-    }
-
-
-    @Override
-    public MappedQuestion setErrorMessage(String error) {
-        super.setErrorMessage(error);
-        return this;
-    }
-
-    @Override
-    public MappedQuestion setResponse(IResponse<String> response) {
-        super.setResponse(response);
-        return this;
-    }
-
-    @Override
-    public MappedQuestion setQuestion(String question) {
-        super.setQuestion(question);
-        return this;
-    }
-
-    @Override
-    public MappedQuestion setConnection(GuildConnection connection) {
-        super.setConnection(connection);
-        return this;
-    }
-
-    @Override
-    public MappedQuestion setChannel(MessageChannel channel) {
-        super.setChannel(channel);
-        return this;
-    }
-
-    @Override
-    public MappedQuestion setSender(User sender) {
-        super.setSender(sender);
-        return this;
     }
 }

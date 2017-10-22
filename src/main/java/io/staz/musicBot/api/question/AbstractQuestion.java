@@ -1,65 +1,45 @@
 package io.staz.musicBot.api.question;
 
 import io.staz.musicBot.guild.GuildConnection;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-@RequiredArgsConstructor
 public abstract class AbstractQuestion<T> implements IQuestion<T> {
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter
+    @Setter
     private String errorMessage;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter
+    @Setter
     private IResponse<T> response;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter
+    @Setter
     private String question;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter
+    @Setter
     private GuildConnection connection;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter
+    @Setter
     private MessageChannel channel;
 
-    @Getter(AccessLevel.PROTECTED)
+    @Getter
+    @Setter
     private User sender;
 
-    @Override
-    public AbstractQuestion setErrorMessage(String error) {
-        this.errorMessage = error;
-        return this;
-    }
-
-    @Override
-    public AbstractQuestion setResponse(IResponse<T> response) {
+    public AbstractQuestion(String errorMessage, IResponse<T> response, String question, GuildConnection connection, MessageChannel channel, User sender) {
+        this.errorMessage = errorMessage;
         this.response = response;
-        return this;
-    }
-
-    @Override
-    public AbstractQuestion setQuestion(String question) {
         this.question = question;
-        return this;
-    }
-
-    public AbstractQuestion setConnection(GuildConnection connection) {
         this.connection = connection;
-        return this;
-    }
-
-    public AbstractQuestion setChannel(MessageChannel channel) {
         this.channel = channel;
-        return this;
-    }
-
-    public AbstractQuestion setSender(User sender) {
         this.sender = sender;
-        return this;
     }
 
     @Override

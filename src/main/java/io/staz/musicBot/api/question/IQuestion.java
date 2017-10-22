@@ -5,11 +5,11 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 public interface IQuestion<T> {
 
 
-    IQuestion setErrorMessage(String error);
+    void setErrorMessage(String error);
 
-    IQuestion setResponse(IResponse<T> response);
+    void setResponse(IResponse<T> response);
 
-    IQuestion setQuestion(String question);
+    void setQuestion(String question);
 
     void ask();
 
@@ -17,7 +17,7 @@ public interface IQuestion<T> {
 
     void onMessage(MessageReceivedEvent event);
 
-    public static interface IResponse<T> {
+    interface IResponse<T> {
         boolean onResponse(MessageReceivedEvent event, T answer);
     }
 }
