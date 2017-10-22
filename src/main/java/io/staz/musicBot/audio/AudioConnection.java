@@ -2,91 +2,110 @@ package io.staz.musicBot.audio;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.Getter;
+import lombok.Setter;
+import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 
-public class AudioConnection extends AudioEventAdapter {
+import java.util.concurrent.Future;
+
+public class AudioConnection implements IAudioConnection {
 
     @Getter
     private final VoiceChannel channel;
-    @Getter
     private final AudioManager manager;
-    protected AudioPlayer player;
-    private AudioPlayerManager playerManager;
+    private final DefaultAudioPlayerManager playerManager;
+    @Getter
+    private final AudioPlayer player;
+
+    @Getter
+    @Setter
+    private MessageChannel messageInfo;
 
     public AudioConnection(VoiceChannel channel) {
         this.channel = channel;
-        manager = channel.getGuild().getAudioManager();
+        this.manager = channel.getGuild().getAudioManager();
 
-        playerManager = new DefaultAudioPlayerManager();
-        AudioSourceManagers.registerRemoteSources(playerManager);
+        this.playerManager = new DefaultAudioPlayerManager();
+        AudioSourceManagers.registerRemoteSources(this.playerManager);
 
-        player = playerManager.createPlayer();
-        manager.setSendingHandler(new AudioPlayerSendHandler(player));
+        this.player = playerManager.createPlayer();
+        manager.setSendingHandler(new AudioPlayerSendHandler(this.player));
 
         manager.openAudioConnection(channel);
-        player.addListener(this);
     }
 
-    public void playSong(String url, LoadErrorHandler handler) {
-        playerManager.loadItem(url, new AudioLoadResultHandler() {
+    @Override
+    public Future<Void> loadTrack(String identifier, AudioLoadResultHandler handler) {
+        return playerManager.loadItem(identifier, handler);
+    }
+
+    @Override
+    public void playSong(String identifier, LoadErrorHandler handler) {
+        loadTrack(identifier, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                player.playTrack(track);
+                playTrack(track);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                if (playlist.getTracks().size() > 0)
-                    player.playTrack(playlist.getTracks().get(0));
+                if (playlist.getSelectedTrack() != null)
+                    playTrack(playlist.getSelectedTrack());
+                else if (playlist.getTracks().size() > 0)
+                    playTrack(playlist.getTracks().get(0));
             }
 
             @Override
             public void noMatches() {
-                handler.noMatches(url);
+                handler.noMatches(identifier);
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                handler.loadFailed(exception, url);
+                handler.loadFailed(exception, identifier);
             }
         });
     }
 
-    public void loadSong(String url, AudioLoadResultHandler handler) {
-        playerManager.loadItem(url, handler);
+    @Override
+    public void playTrack(AudioTrack track) {
+        if (messageInfo != null)
+            messageInfo.sendMessage("Now playing: " + track.getInfo().title + " by: " + track.getInfo().author + "\n" + track.getInfo().uri).submit();
+
+        player.setPaused(false);
+        player.playTrack(track);
     }
 
-    public void stop() {
-        this.player.stopTrack();
+    @Override
+    public void stopSong() {
+        pauseSong();
+        player.getPlayingTrack().setPosition(0);
     }
 
-    public void pause() {
-        this.player.setPaused(true);
+    @Override
+    public void pauseSong() {
+        player.setPaused(true);
     }
 
-    public void play() {
-        this.player.setPaused(false);
+    @Override
+    public void playSong() {
+        player.setPaused(false);
     }
 
-    public void playTrack(AudioTrack queued) {
-        System.out.println(queued.getIdentifier());
-        this.player.playTrack(queued);
+    @Override
+    public void clear() {
+        player.stopTrack();
     }
 
-    public boolean isActive() {
-        return this.manager.isConnected() && this.player != null && this.playerManager != null; // TODO figure this out.
-    }
-
-    public void terminate() {
-        this.manager.closeAudioConnection();
+    @Override
+    public void disconnect() {
+        manager.closeAudioConnection();
     }
 }

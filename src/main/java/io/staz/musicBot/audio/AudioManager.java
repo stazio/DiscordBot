@@ -47,15 +47,15 @@ public class AudioManager {
 
     public void playSongTo(MessageReceivedEvent event, String answer, LoadErrorHandler.DEFAULT aDefault) {
         getQueuedAudioConnection(event.getAuthor()).
-                ifPresent(queuedAudioConnection -> queuedAudioConnection.play(answer, aDefault));
+                ifPresent(queuedAudioConnection -> queuedAudioConnection.playSong(answer, aDefault));
     }
 
     public void stop() {
-        getAudioConnection().ifPresent(QueuedAudioConnection::stop);
+        getAudioConnection().ifPresent(QueuedAudioConnection::stopSong);
     }
 
     public void close() {
-        getAudioConnection().ifPresent(QueuedAudioConnection::terminate);
+        getAudioConnection().ifPresent(QueuedAudioConnection::disconnect);
         audio = null;
     }
 }

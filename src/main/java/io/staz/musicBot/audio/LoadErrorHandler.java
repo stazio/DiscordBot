@@ -18,13 +18,13 @@ public interface LoadErrorHandler {
         private final MessageChannel channel;
 
         @Override
-        public void noMatches(String url) {
-            channel.sendMessage(url + " not found.").submit(false);
+        public void noMatches(String identifier) {
+            channel.sendMessage(identifier + " not found.").submit(false);
         }
 
         @Override
-        public void loadFailed(FriendlyException exception, String url) {
-            channel.sendMessage("Failed to load " + url).submit(false);
+        public void loadFailed(FriendlyException exception, String identifier) {
+            channel.sendMessage("Failed to load " + identifier).submit(false);
         }
     }
 }
