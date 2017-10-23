@@ -18,21 +18,21 @@ import java.util.Map;
 import java.util.Queue;
 
 
-public class MappedQuestion extends AbstractQuestion<String> {
+public class TextChoiceQuestion extends AbstractQuestion<String> {
 
     @Getter
     private Map<String, String> answerMap;
     private Map<String, String> numericQuestions = null;
 
     @Builder
-    public MappedQuestion(Map<String, String> answers, boolean useNumericQuestions, String errorMessage, IResponse<String> response, String question, GuildConnection connection, MessageChannel channel, User sender) {
+    public TextChoiceQuestion(Map<String, String> answers, boolean useNumericQuestions, String errorMessage, IResponse<String> response, String question, GuildConnection connection, MessageChannel channel, User sender) {
         super(errorMessage, response, question, connection, channel, sender);
         this.answerMap = answers;
         if (useNumericQuestions)
             this.numericQuestions = new HashMap<>();
     }
 
-    public MappedQuestion setAnswers(Collection<String> answers) {
+    public TextChoiceQuestion setAnswers(Collection<String> answers) {
         Map<String, String
                 > map = new HashMap<>();
         int i = 0;
@@ -43,12 +43,12 @@ public class MappedQuestion extends AbstractQuestion<String> {
         return setAnswers(map);
     }
 
-    public MappedQuestion setAnswers(Map<String, String> answers) {
+    public TextChoiceQuestion setAnswers(Map<String, String> answers) {
         this.answerMap = answers;
         return this;
     }
 
-    public MappedQuestion setNumericQuestions(boolean numericQuestions) {
+    public TextChoiceQuestion setNumericQuestions(boolean numericQuestions) {
         this.numericQuestions = numericQuestions ? new HashMap<>() : null;
         return this;
     }
