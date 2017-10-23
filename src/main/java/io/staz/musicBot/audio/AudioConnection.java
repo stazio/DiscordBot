@@ -21,7 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Future;
 
-public class AudioConnection implements IAudioConnection, AudioEventListener{
+public class AudioConnection implements IAudioConnection, AudioEventListener {
 
     @Getter
     private final VoiceChannel channel;
@@ -37,6 +37,7 @@ public class AudioConnection implements IAudioConnection, AudioEventListener{
     @Getter
     @Setter
     private MessageChannel messageInfo;
+    private Timer disconnectTimer;
 
     public AudioConnection(VoiceChannel channel) {
         this.channel = channel;
@@ -108,7 +109,8 @@ public class AudioConnection implements IAudioConnection, AudioEventListener{
 
     @Override
     public void playSong() {
-        player.setPaused(false); disconnectTimer.purge();
+        player.setPaused(false);
+        disconnectTimer.purge();
     }
 
     @Override
@@ -122,7 +124,7 @@ public class AudioConnection implements IAudioConnection, AudioEventListener{
     }
 
     private void enableDisconnectTimer() {
-        Main.logger.info("Delay: " + ( System.currentTimeMillis()));
+        Main.logger.info("Delay: " + (System.currentTimeMillis()));
         if (disconnectTimer != null)
             disconnectTimer.purge();
 
@@ -136,7 +138,6 @@ public class AudioConnection implements IAudioConnection, AudioEventListener{
         }, getDisconnectDelay());
     }
 
-    private Timer disconnectTimer;
     @Override
     public void onEvent(AudioEvent event) {
         if (event instanceof TrackEndEvent) {

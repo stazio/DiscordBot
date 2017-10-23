@@ -56,7 +56,7 @@ public class QueuedAudioConnection extends AudioConnection {
         });
     }
 
-    public void queueSong(String identifier, LoadErrorHandler handler){
+    public void queueSong(String identifier, LoadErrorHandler handler) {
         queueSong(identifier, handler, true);
     }
 

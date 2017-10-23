@@ -8,13 +8,17 @@ import java.util.concurrent.Future;
 public interface IAudioConnection {
 
     Future<Void> loadTrack(String identifier, AudioLoadResultHandler handler);
+
     void playSong(String identifier, LoadErrorHandler handler);
 
     void playTrack(AudioTrack track);
 
     void stopSong();
+
     void pauseSong();
+
     void playSong();
+
     void clear();
 
     boolean isActive();
