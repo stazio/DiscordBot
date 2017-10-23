@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -19,15 +19,17 @@ public class PluginLoader {
         ArrayList<PluginInfo> pluginInfo = new ArrayList<PluginInfo>();
         if (files != null) {
             for (File file : files) {
-                ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-                ZipFile zip = new ZipFile(file);
-                ZipEntry entry = zip.getEntry("config.yml");
-                if (entry != null) {
-                    InputStream instream = zip.getInputStream(entry);
-                    PluginInfo info = mapper.readValue(instream, PluginInfo.class);
-                    pluginInfo.add(info);
-                    if (loadPlugin)
-                        loadLibrary(file);
+                if (file.isFile()) {
+                    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                    ZipFile zip = new ZipFile(file);
+                    ZipEntry entry = zip.getEntry("config.yml");
+                    if (entry != null) {
+                        InputStream instream = zip.getInputStream(entry);
+                        PluginInfo info = mapper.readValue(instream, PluginInfo.class);
+                        pluginInfo.add(info);
+                        if (loadPlugin)
+                            loadLibrary(file);
+                    }
                 }
             }
         }
@@ -40,14 +42,13 @@ public class PluginLoader {
      * Source: https://stackoverflow.com/questions/27187566/load-jar-dynamically-at-runtime
      */
     @SneakyThrows
-    private static synchronized void loadLibrary(java.io.File jar)
-    {
+    private static synchronized void loadLibrary(java.io.File jar) {
         /*We are using reflection here to circumvent encapsulation; addURL is not public*/
-        java.net.URLClassLoader loader = (java.net.URLClassLoader)ClassLoader.getSystemClassLoader();
+        java.net.URLClassLoader loader = (java.net.URLClassLoader) ClassLoader.getSystemClassLoader();
         java.net.URL url = jar.toURI().toURL();
         /*Disallow if already loaded*/
-        for (java.net.URL it : java.util.Arrays.asList(loader.getURLs())){
-            if (it.equals(url)){
+        for (java.net.URL it : java.util.Arrays.asList(loader.getURLs())) {
+            if (it.equals(url)) {
                 return;
             }
         }

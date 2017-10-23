@@ -1,147 +1,179 @@
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import io.staz.musicBot.api.Question;
-import io.staz.musicBot.audio.AudioConnection;
+import io.staz.musicBot.api.Configuration;
+import io.staz.musicBot.api.question.questions.TextChoiceQuestion;
 import io.staz.musicBot.audio.LoadErrorHandler;
 import io.staz.musicBot.audio.QueuedAudioConnection;
+import io.staz.musicBot.command.BadCommand;
 import io.staz.musicBot.command.Command;
-import io.staz.musicBot.command.SimpleCommand;
-import io.staz.musicBot.instances.Instance;
+import io.staz.musicBot.command.ICommand;
+import io.staz.musicBot.guild.GuildConnection;
 import io.staz.musicBot.plugin.Plugin;
 import io.staz.musicBot.plugin.PluginInfo;
-import net.dv8tion.jda.core.entities.*;
+import lombok.val;
+import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.commons.collections4.BidiMap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BasicCommands extends Plugin {
-    private QueuedAudioConnection connection;
-    private User connectedTo;
 
-
-    public BasicCommands(Instance instance, PluginInfo info) {
-        super(instance, info);
+    public BasicCommands(GuildConnection guild, PluginInfo info) {
+        super(guild, info);
     }
 
     @Override
     public void onLoad() {
-        getCommandManager().addCommands(new Command[]{
-                new SimpleCommand(this, "search") {
+        Configuration<BasicConfig> config = getConfig("config.conf", BasicConfig.class, false);
+        BasicConfig res = config.getValue() != null ? config.getValue() : new BasicConfig();
+
+        res.commands.forEach(command -> getCommandManager().addCommand(new BadCommand(this, command.name) {
+            @Override
+            public Object onCommand(String cmnd, String message, Message eventMessage, MessageReceivedEvent event) {
+                getGuild().getAudioManager().playSongTo(event, command.video, new LoadErrorHandler.DEFAULT(event.getChannel()));
+                return null;
+            }
+        }));
+
+        Plugin instance = this;
+        getCommandManager().addCommands(new ICommand[]{
+                new BadCommand(this, "addsong") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        BasicConfig.CommandConfig commandConfig = new BasicConfig.CommandConfig();
+                        commandConfig.name = message.split(" ")[0];
+                        if (message.substring(commandConfig.name.length()).length() > 0) {
+                            commandConfig.video = message.substring(commandConfig.name.length());
+
+                        } else if (event.getMessage().getAttachments().size() > 0) {
+                            commandConfig.video = event.getMessage().getAttachments().get(0).getUrl();
+                            getPlugin().getLogger().info("Adding this song: " + commandConfig.video);
+                        } else
+                            return "Please either attach a song, or provide a valid URL.";
+                        getCommandManager().addCommand(new BadCommand(instance, commandConfig.name) {
+                            @Override
+                            public Object onCommand(String cmnd, String message, Message eventMessage, MessageReceivedEvent event) {
+                                getGuild().getAudioManager().playSongTo(event, commandConfig.video, new LoadErrorHandler.DEFAULT(event.getChannel()));
+                                return null;
+                            }
+                        });
+                        res.commands.add(commandConfig);
+                        config.save();
+                        return null;
+                    }
+                },
+
+                Command.builder().
+                        name("join").
+                        plugin(this).
+                        action((command, message, eventMessage, event) -> {
+                            if (getGuild().getAudioManager().getQueuedAudioConnection(event.getAuthor()).isPresent())
+                                return null;
+                            return "Could not find where you are!";
+                        }).
+                        build(),
+
+                new BadCommand(this, "leave") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        getAudioManager().close();
+                        return null;
+                    }
+                },
+                new BadCommand(this, "commands") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        MessageBuilder response = new MessageBuilder();
+                        getGuild().getCommandManager().getCommandNameMap().keySet().forEach(s ->
+                                response.append("!").
+                                        append(s).
+                                        append("\n"));
+                        return response.buildAll();
+                    }
+                },
+                new BadCommand(this, "search") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         Map<String, String> answers = YTSearch.search(message.trim());
 
-                        new Question(event.getChannel(), getInstance()).
-                                setAnswers(answers).
-                                setQuestion("Which song do you wish to play?").
-                                setNumericQuestions(true).
-                                onResponse((event1, answer) ->
+                        TextChoiceQuestion.builder().
+                                channel(event.getChannel()).
+                                connection(getGuild()).
+                                answers(answers).
+                                question("Which song do you wish to play?").
+                                useNumericQuestions(true).
+                                response((event1, answer) ->
                                 {
                                     event.getChannel().sendMessage("Playing song: " + answers.get(answer)).complete();
-                                    getInstance().getAudioAPI().playSongTo(event, answer);
+                                    getGuild().getAudioManager().playSongTo(event, answer, new LoadErrorHandler.DEFAULT(event.getChannel()));
                                     return true;
-                                }).ask();
+                                }).build().ask();
                         return null;
                     }
                 },
-                new SimpleCommand(this, "play") {
+                new BadCommand(this, "play") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        AudioConnection conn = getConnection(event.getAuthor());
-                        if (conn != null) {
-                            conn.playSong(message, new LoadErrorHandler.DEFAULT(event.getChannel()));
-                            return null;
-                        }
-                        return "Failed to find the channel you are in.";
-                    }
-                },
-                new SimpleCommand(this, "stop") {
-                    @Override
-                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        getInstance().getAudioAPI().stop();
+                        getGuild().getAudioManager().playSongTo(event, message, new LoadErrorHandler.DEFAULT(event.getChannel()));
                         return null;
                     }
                 },
-                new SimpleCommand(this, "skip") {
+                new BadCommand(this, "stop") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        for (AudioConnection audioConnection : getInstance().getAudioAPI().getConnections()) {
-                            if (audioConnection instanceof QueuedAudioConnection) {
-                                if (((QueuedAudioConnection) audioConnection).playNextSong())
-                                    return null;
-                            }
-                        }
-                        return "No songs available";
+                        getGuild().getAudioManager().stop();
+                        return null;
                     }
                 },
-                new SimpleCommand(this, "list") {
+                new BadCommand(this, "skip") {
+                    @Override
+                    public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
+                        getGuild().getAudioManager().getAudioConnection()
+                                .ifPresent(QueuedAudioConnection::playSong);
+                        return null;
+                    }
+                },
+                new BadCommand(this, "list") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         List<String> list = new ArrayList<>();
-                        for (AudioConnection connection :
-                                getInstance().getAudioAPI().getConnections()) {
-                            if (connection instanceof QueuedAudioConnection) {
-                                for (AudioTrack track :
-                                        ((QueuedAudioConnection) connection).getQueue()) {
-                                    list.add(track.getInfo().title + " - " + track.getInfo().author);
-                                }
-                            }
-                        }
+
+                        getGuild().getAudioManager().getAudioConnection().ifPresent(conn ->
+                                conn.getQueue().forEach(track ->
+                                        list.add(track.getInfo().title + " - " + track.getInfo().author)));
+
                         if (list.size() == 0)
                             return "No songs queued!";
                         return list;
                     }
                 },
-                new SimpleCommand(this, "clear") {
+                new BadCommand(this, "clear") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        for (AudioConnection connection :
-                                getInstance().getAudioAPI().getConnections()) {
-                            if (connection instanceof QueuedAudioConnection)
-                                ((QueuedAudioConnection) connection).clear();
-                        }
+                        getGuild().getAudioManager().getAudioConnection().ifPresent(QueuedAudioConnection::clear);
                         return null;
                     }
                 },
-                new SimpleCommand(this, "stanislaw") {
+                new BadCommand(this, "stanislaw") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         return "You have entered the Stanislaw.";
                     }
                 },
-                new SimpleCommand(this, "queue") {
+                new BadCommand(this, "queue") {
                     @Override
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-                        QueuedAudioConnection conn = getConnection(event.getAuthor());
-                        if (conn != null) {
-                            conn.queueSong(message, new LoadErrorHandler.DEFAULT(event.getChannel()));
-                            conn.play();
-                        } else
-                            return "Could not find your channel!";
+
+                        val conn = getGuild().getAudioManager().getQueuedAudioConnection(event.getAuthor());
+                        conn.ifPresent(queuedAudioConnection -> queuedAudioConnection.queueSong(message,
+                                new LoadErrorHandler.DEFAULT(event.getChannel())));
+                        if (!conn.isPresent())
+                            return "Could not find the channel you are in.";
                         return null;
                     }
                 }
         });
     }
 
-    public QueuedAudioConnection getConnection(User author) {
-        if (connectedTo != null && connectedTo.equals(author) && connection != null && connection.isActive()) {
-            return connection;
-        } else {
-            for (Guild guild : author.getMutualGuilds()) {
-                for (VoiceChannel c : guild.getVoiceChannels()) {
-                    for (Member member : c.getMembers()) {
-                        if (member.getUser().equals(author)) {
-                            connectedTo = author;
-                            return connection = getInstance().getAudioAPI().createQueuedConnection(c);
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
 }

@@ -1,113 +1,76 @@
 package io.staz.musicBot.audio;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import lombok.Getter;
-import lombok.val;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.ArrayList;
 
 public class QueuedAudioConnection extends AudioConnection {
 
     @Getter
-    private LinkedBlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
-    private LoadErrorHandler activeErrorHandler;
+    private final ArrayList<AudioTrack> queue = new ArrayList<>();
 
     public QueuedAudioConnection(VoiceChannel channel) {
         super(channel);
     }
 
-    public void queueSong(String url, LoadErrorHandler errorHandler) {
-        activeErrorHandler = errorHandler;
-        loadSong(url, new AudioLoadResultHandler() {
+    @Override
+    public void playSong() {
+        if (queue.size() > 0)
+            playTrack(queue.remove(0));
+        else if (getMessageInfo() != null)
+            getMessageInfo().sendMessage("No more songs.").submit();
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+        queue.clear();
+    }
+
+    public void queueSong(String identifier, LoadErrorHandler handler, boolean play) {
+        loadTrack(identifier, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                queue.add(track);
+                queueTrack(track, play);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                queue.addAll(playlist.getTracks());
+                playlist.getTracks().forEach(track -> queueTrack(track, play));
             }
 
             @Override
             public void noMatches() {
-                errorHandler.noMatches(url);
+                handler.noMatches(identifier);
             }
 
             @Override
             public void loadFailed(FriendlyException exception) {
-                errorHandler.loadFailed(exception, url);
+                handler.loadFailed(exception, identifier);
             }
         });
+    }
+
+    public void queueSong(String identifier, LoadErrorHandler handler) {
+        queueSong(identifier, handler, true);
+    }
+
+
+    public void queueTrack(AudioTrack track, boolean play) {
+        if (getMessageInfo() != null)
+            getMessageInfo().sendMessage("Added " + track.getInfo().title + " by " + track.getInfo().author + " to the queue.\n" + track.getInfo().uri).submit();
+        queue.add(track);
+
+        if (play)
+            playSong();
     }
 
     public void queueTrack(AudioTrack track) {
-        this.queueTrack(track, true);
-    }
-
-    public void queueTrack(AudioTrack track, boolean play) {
-        System.out.println("Adding song: " + track.getIdentifier());
-        this.queue.add(track);
-        if (play)
-            this.play();
-    }
-
-    @Override
-    public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        if (endReason.mayStartNext) {
-            playNextSong();
-        }
-    }
-
-    public boolean playNextSong() {
-        AudioTrack queued = queue.poll();
-        if (queued != null)
-            playTrack(queued);
-        else
-            return false;
-        return true;
-    }
-
-    @Override
-    public void play() {
-        super.play();
-        if (player.getPlayingTrack() == null)
-            playNextSong();
-    }
-
-
-    public void clear() {
-        this.queue.clear();
-    }
-
-    public void play(String message, LoadErrorHandler errorHandler) {
-        val instance = this;
-        loadSong(message, new AudioLoadResultHandler() {
-            @Override
-            public void trackLoaded(AudioTrack track) {
-                playTrack(track);
-            }
-
-            @Override
-            public void playlistLoaded(AudioPlaylist playlist) {
-                playlist.getTracks().forEach(instance::queueTrack);
-            }
-
-            @Override
-            public void noMatches() {
-                errorHandler.noMatches(message);
-            }
-
-            @Override
-            public void loadFailed(FriendlyException exception) {
-                errorHandler.loadFailed(exception, message);
-            }
-        });
+        queueTrack(track, true);
     }
 }

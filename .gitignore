@@ -8,6 +8,7 @@ run
 gradle
 gradlew.bat
 gradlew
-resources/application.conf
-
 /BasicCommandMod/BasicCommandMod.iml
+/discordBot.iml
+/discordBot.ipr
+/discordBot.iws

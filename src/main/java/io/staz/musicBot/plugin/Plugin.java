@@ -1,8 +1,9 @@
 package io.staz.musicBot.plugin;
 
 import io.staz.musicBot.api.Configuration;
+import io.staz.musicBot.audio.AudioManager;
 import io.staz.musicBot.command.CommandManager;
-import io.staz.musicBot.instances.Instance;
+import io.staz.musicBot.guild.GuildConnection;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.Logger;
@@ -13,28 +14,39 @@ import java.io.File;
 public abstract class Plugin {
 
     @Getter
-    private final Instance instance;
+    private final GuildConnection guild;
     @Getter
     private final PluginInfo info;
 
     public Logger getLogger() {
-        return instance.getLogger();
+        return guild.getLogger();
     }
 
-    public <T> Configuration<T> getConfig(String name, Class<T> klass) {
+    public <T> Configuration<T> getConfig(String name, Class<T> klass, boolean resource) {
+        name = System.getProperty("user.dir") + "/plugins/" + info.name + "/" + name;
+        new File(System.getProperty("user.dir") + "/plugins/" + info.name).mkdirs();
+
         return new
-                Configuration<T>(new File(name), "/" + name, klass);
+                Configuration<T>(new File(name), resource ? "/" + name : null, klass);
     }
 
-    public <T> Configuration<T> getDefaultConfig(Class<T> klass) {
-        return getConfig("/" + info.id + ".yml", klass);
+    public void onLoad() {
     }
 
-    public void onLoad() {}
-
-    public void onSave() {}
+    public void onSave() {
+    }
 
     public CommandManager getCommandManager() {
-        return  instance.getCommandManager();
+        return guild.getCommandManager();
+    }
+
+    public AudioManager getAudioManager() {
+        return guild.getAudioManager();
+    }
+
+    public File getCachedFile(String s) {
+        File file = new File("cache/" + getGuild().getGuild().getName() + "/" + s);
+        file.getParentFile().mkdirs();
+        return file;
     }
 }
