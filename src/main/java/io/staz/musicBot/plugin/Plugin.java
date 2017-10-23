@@ -43,4 +43,10 @@ public abstract class Plugin {
     public AudioManager getAudioManager() {
         return guild.getAudioManager();
     }
+
+    public File getCachedFile(String s) {
+        File file = new File("cache/" + getGuild().getGuild().getName() + "/" + s);
+        file.getParentFile().mkdirs();
+        return file;
+    }
 }
