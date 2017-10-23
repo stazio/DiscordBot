@@ -17,5 +17,7 @@ public interface IAudioConnection {
     void playSong();
     void clear();
 
+    boolean isActive();
+
     void disconnect();
 }

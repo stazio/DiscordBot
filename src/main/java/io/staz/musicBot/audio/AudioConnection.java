@@ -3,19 +3,25 @@ package io.staz.musicBot.audio;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEvent;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventListener;
+import com.sedmelluq.discord.lavaplayer.player.event.TrackEndEvent;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import io.staz.musicBot.Main;
 import lombok.Getter;
 import lombok.Setter;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.managers.AudioManager;
 
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Future;
 
-public class AudioConnection implements IAudioConnection {
+public class AudioConnection implements IAudioConnection, AudioEventListener{
 
     @Getter
     private final VoiceChannel channel;
@@ -23,6 +29,10 @@ public class AudioConnection implements IAudioConnection {
     private final DefaultAudioPlayerManager playerManager;
     @Getter
     private final AudioPlayer player;
+
+    @Getter
+    @Setter                     // MILLIS * SEC * MIN
+    private long disconnectDelay = 1000 * 5;
 
     @Getter
     @Setter
@@ -36,6 +46,7 @@ public class AudioConnection implements IAudioConnection {
         AudioSourceManagers.registerRemoteSources(this.playerManager);
 
         this.player = playerManager.createPlayer();
+        this.player.addListener(this);
         manager.setSendingHandler(new AudioPlayerSendHandler(this.player));
 
         manager.openAudioConnection(channel);
@@ -79,8 +90,8 @@ public class AudioConnection implements IAudioConnection {
         if (messageInfo != null)
             messageInfo.sendMessage("Now playing: " + track.getInfo().title + " by: " + track.getInfo().author + "\n" + track.getInfo().uri).submit();
 
-        player.setPaused(false);
         player.playTrack(track);
+        playSong();
     }
 
     @Override
@@ -92,11 +103,12 @@ public class AudioConnection implements IAudioConnection {
     @Override
     public void pauseSong() {
         player.setPaused(true);
+        enableDisconnectTimer();
     }
 
     @Override
     public void playSong() {
-        player.setPaused(false);
+        player.setPaused(false); disconnectTimer.purge();
     }
 
     @Override
@@ -107,5 +119,33 @@ public class AudioConnection implements IAudioConnection {
     @Override
     public void disconnect() {
         manager.closeAudioConnection();
+    }
+
+    private void enableDisconnectTimer() {
+        Main.logger.info("Delay: " + ( System.currentTimeMillis()));
+        if (disconnectTimer != null)
+            disconnectTimer.purge();
+
+        disconnectTimer = new Timer();
+        disconnectTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Main.logger.info("Disconnecting...");
+                disconnect();
+            }
+        }, getDisconnectDelay());
+    }
+
+    private Timer disconnectTimer;
+    @Override
+    public void onEvent(AudioEvent event) {
+        if (event instanceof TrackEndEvent) {
+            enableDisconnectTimer();
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return manager.isConnected();
     }
 }

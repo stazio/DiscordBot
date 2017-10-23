@@ -17,7 +17,7 @@ public class AudioManager {
     private QueuedAudioConnection audio;
 
     public QueuedAudioConnection getQueuedAudioConnection(VoiceChannel channel) {
-        if (audio != null && audio.getChannel().equals(channel))
+        if (audio != null && audio.getChannel().equals(channel) && audio.isActive())
             return audio;
 
         guild.getLogger().info("Connecting to Voice Channel: " + channel.getName());
