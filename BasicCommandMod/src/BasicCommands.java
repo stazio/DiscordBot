@@ -1,5 +1,5 @@
 import io.staz.musicBot.api.Configuration;
-import io.staz.musicBot.api.question.questions.MappedQuestion;
+import io.staz.musicBot.api.question.questions.TextChoiceQuestion;
 import io.staz.musicBot.audio.LoadErrorHandler;
 import io.staz.musicBot.audio.QueuedAudioConnection;
 import io.staz.musicBot.command.BadCommand;
@@ -43,8 +43,14 @@ public class BasicCommands extends Plugin {
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         BasicConfig.CommandConfig commandConfig = new BasicConfig.CommandConfig();
                         commandConfig.name = message.split(" ")[0];
-                        commandConfig.video = message.substring(commandConfig.name.length());
+                        if ( message.substring(commandConfig.name.length()).length() > 0 ) {
+                            commandConfig.video = message.substring(commandConfig.name.length());
 
+                        }else if (event.getMessage().getAttachments().size() > 0) {
+                            commandConfig.video =  event.getMessage().getAttachments().get(0).getUrl();
+                            getPlugin().getLogger().info("Adding this song: " + commandConfig.video);
+                        }else
+                            return "Please either attach a song, or provide a valid URL.";
                         getCommandManager().addCommand(new BadCommand(instance, commandConfig.name) {
                             @Override
                             public Object onCommand(String cmnd, String message, Message eventMessage, MessageReceivedEvent event) {
@@ -91,7 +97,7 @@ public class BasicCommands extends Plugin {
                     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
                         Map<String, String> answers = YTSearch.search(message.trim());
 
-                        MappedQuestion.builder().
+                        TextChoiceQuestion.builder().
                                 channel(event.getChannel()).
                                 connection(getGuild()).
                                 answers(answers).
