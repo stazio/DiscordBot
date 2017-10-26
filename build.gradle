@@ -14,7 +14,7 @@ idea {
 
 
 group 'stazio'
-version '0.0.4'
+version '0.0.5'
 def jdaVersion = '3.3.0_265'
 
 mainClassName = 'io.staz.musicBot.Main'
