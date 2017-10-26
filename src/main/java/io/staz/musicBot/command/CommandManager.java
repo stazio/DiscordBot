@@ -58,7 +58,7 @@ public class CommandManager {
     // Message Processing
     @SubscribeEvent
     private void onMessageReceived(MessageReceivedEvent event) {
-        if (this.commandable) {
+        if (this.commandable && this.guild.getGuild().equals(event.getGuild())) {
             String message = event.getMessage().getContent();
             if (message.indexOf("!") == 0 && !event.getAuthor().isBot()) {
                 // Get the command we are sending
