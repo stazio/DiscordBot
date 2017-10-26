@@ -6,6 +6,7 @@ import io.staz.musicBot.instances.Instance;
 import io.staz.musicBot.plugin.PluginManager;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.dv8tion.jda.core.entities.Game;
 import net.dv8tion.jda.core.entities.Guild;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,9 @@ public class GuildConnection {
 
         logger.info("Loading plugins...");
         this.pluginManager.loadAllPlugins();
+
+        logger.info("Setting \"played game\"");
+        getInstance().getJda().getPresence().setGame(Game.of("!commands for commands."));
     }
 
     public void onUnload() {
