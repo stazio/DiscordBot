@@ -4,6 +4,8 @@ import io.staz.musicBot.guild.GuildConnection;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.SubscribeEvent;
@@ -59,44 +61,46 @@ public class CommandManager {
     @SubscribeEvent
     private void onMessageReceived(MessageReceivedEvent event) {
         if (this.commandable) {
-            String message = event.getMessage().getContent();
-            if (message.indexOf("!") == 0 && !event.getAuthor().isBot()) {
-                // Get the command we are sending
-                String command = message.split(" ")[0].substring(1);
-                ICommand abstractCommandAction = getCommand(command);
+            if (event.getChannel().getType() == ChannelType.PRIVATE || this.guild.getGuild().equals(event.getGuild())) {
+                String message = event.getMessage().getContent();
+                if (message.indexOf("!") == 0 && !event.getAuthor().isBot()) {
+                    // Get the command we are sending
+                    String command = message.split(" ")[0].substring(1);
+                    ICommand abstractCommandAction = getCommand(command);
 
-                // This command exists
-                if (abstractCommandAction != null) {
-                    guild.getLogger().info("Executing command: " + command);
+                    // This command exists
+                    if (abstractCommandAction != null) {
+                        guild.getLogger().info("Executing command: " + command);
 
-                    // Do the commands action
-                    Object response = abstractCommandAction.onCommand(command, message.substring(command.length() + 1).trim(),
-                            event.getMessage(), event);
+                        // Do the commands action
+                        Object response = abstractCommandAction.onCommand(command, message.substring(command.length() + 1).trim(),
+                                event.getMessage(), event);
 
-                    // The command wants us to send a response
-                    if (response != null) {
+                        // The command wants us to send a response
+                        if (response != null) {
 
-                        // Get the channel
-                        MessageChannel channel = event.getChannel(); // TODO does this not work?
+                            // Get the channel
+                            MessageChannel channel = event.getChannel(); // TODO does this not work?
 
-                        // Create the message
-                        MessageBuilder responseMessage = new MessageBuilder();
+                            // Create the message
+                            MessageBuilder responseMessage = new MessageBuilder();
 
-                        if (response instanceof Iterable) {
-                            ((Iterable<?>) response).forEach(responseMessage::append);
-                        } else
-                            responseMessage.append(response);
+                            if (response instanceof Iterable) {
+                                ((Iterable<?>) response).forEach(responseMessage::append);
+                            } else if (response instanceof net.dv8tion.jda.core.entities.Message)
+                                responseMessage.append(((Message) response).getContent());
 
-                        // Send it to the user
-                        responseMessage.buildAll(MessageBuilder.SplitPolicy.NEWLINE).forEach(
-                                message1 -> channel.sendMessage(message1).submit()
-                        );
+                            // Send it to the user
+                            responseMessage.buildAll(MessageBuilder.SplitPolicy.NEWLINE).forEach(
+                                    message1 -> channel.sendMessage(message1).submit()
+                            );
 
-                    }
-                } else
-                    // AbstractCommand not found.
-                    guild.getLogger().info("AbstractCommand " + command + " not found.");
+                        }
+                    } else
+                        // AbstractCommand not found.
+                        guild.getLogger().info("AbstractCommand " + command + " not found.");
 
+                }
             }
         }
     }

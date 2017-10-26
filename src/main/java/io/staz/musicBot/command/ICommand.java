@@ -15,4 +15,7 @@ public interface ICommand {
     Collection<String> getAliases();
 
     Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event);
+
+    String getDescription();
+
 }
