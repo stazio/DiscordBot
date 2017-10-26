@@ -1,6 +1,7 @@
 package io.staz.musicBot.command;
 
 import io.staz.musicBot.plugin.Plugin;
+import lombok.Getter;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -8,6 +9,8 @@ import java.util.Collections;
 public abstract class BadCommand extends AbstractCommand {
 
     private final String name;
+    @Getter
+    private String description = "No description avaiable";
 
     public BadCommand(Plugin plugin, String name) {
         super(plugin);

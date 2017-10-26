@@ -16,6 +16,9 @@ public class Command implements ICommand {
     private String name;
 
     @Getter
+    private String description;
+
+    @Getter
     @Builder.Default
     private Collection<String> aliases = Collections.emptyList();
 
@@ -27,7 +30,7 @@ public class Command implements ICommand {
 
     @Override
     public Object onCommand(String command, String message, Message eventMessage, MessageReceivedEvent event) {
-        return null;
+        return getAction().onCommand(command,message,eventMessage,event);
     }
 
     public interface CommandAction {
